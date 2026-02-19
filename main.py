@@ -5,8 +5,7 @@ from pages import note_form  # noqa: F401
 from pages import notes_db   # noqa: F401
 from pages import tags        # noqa: F401
 from pages import fontmap     # noqa: F401
-from pages import recommendations  # noqa: F401
-from pages import chat        # noqa: F401
+from pages import knowledge_chat  # noqa: F401
 
 # Tema global
 app.colors(

@@ -19,8 +19,7 @@ def create_sidebar():
             ('/notes', 'Banco de Notas', 'library_books'),
             ('/tags', 'Gerenciar Tags', 'sell'),
             ('/fontmap', 'Mapa de Fontes', 'pie_chart'),
-            ('/recommendations', 'Recomendacoes', 'auto_awesome'),
-            ('/chat', 'Chat de Conhecimento', 'chat'),
+            ('/chat', 'Assistente Virtual', 'auto_awesome'),
         ]
         for path, label, icon in nav_items:
             ui.button(label, icon=icon,

@@ -23,8 +23,7 @@ O Knowledge OS centraliza todas as suas anotacoes em um unico lugar com metadado
 | **Banco de Notas** | Lista todas as notas com busca por texto e filtro por tipo de fonte. Permite editar e excluir notas |
 | **Gerenciar Tags** | Criacao e exclusao de tags para categorizar suas notas |
 | **Mapa de Fontes** | Graficos (rosca e barras) mostrando a distribuicao dos tipos de fontes e tabela com todas as fontes utilizadas |
-| **Recomendacoes** | Pagina para recomendacoes de novas fontes geradas por IA (em desenvolvimento -- conteudo estatico por enquanto) |
-| **Chat de Conhecimento** | Interface de chat estilo ChatGPT para consultar suas notas via linguagem natural (interface pronta, modulo de IA pendente) |
+| **Chat & Recomendacoes** | Interface dividida: chat estilo ChatGPT para consultar suas notas (lado esquerdo) e painel de recomendacoes de fontes geradas com base na sua pergunta (lado direito). Modulo de IA pendente — conteudo placeholder por enquanto |
 
 ## Arquitetura
 
@@ -43,8 +42,7 @@ knowledge-os/
     ├── notes_db.py        # Pagina: listar, buscar, editar e excluir notas
     ├── tags.py            # Pagina: gerenciar tags
     ├── fontmap.py         # Pagina: graficos e tabela de fontes
-    ├── recommendations.py # Pagina: recomendacoes de fontes (estatico)
-    └── chat.py            # Pagina: chat de conhecimento (placeholder)
+    └── knowledge_chat.py  # Pagina: chat + recomendacoes de fontes
 ```
 
 ### Stack Tecnica
@@ -113,5 +111,5 @@ O sistema estara disponivel em **http://localhost:3000**.
 ## Proximos Passos
 
 - Integracao com LLM para o Chat de Conhecimento (busca semantica nas notas)
-- Integracao com LLM para Recomendacoes (analise das ultimas 100 notas para sugerir novas fontes)
+- Integracao com LLM + busca na web para Recomendacoes (analise da pergunta do usuario para sugerir fontes reais)
 - Exportacao de notas (PDF, Markdown)

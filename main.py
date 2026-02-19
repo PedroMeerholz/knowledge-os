@@ -1,6 +1,7 @@
 from nicegui import app, ui
 
 # Importa os modulos de paginas para registrar as rotas via @ui.page
+from pages import home         # noqa: F401
 from pages import note_form  # noqa: F401
 from pages import notes_db   # noqa: F401
 from pages import tags        # noqa: F401

@@ -7,8 +7,8 @@ from models import SOURCE_TYPES
 from storage import save_note, load_tags
 
 
-@ui.page('/')
-def index():
+@ui.page('/new')
+def note_form_page():
     create_sidebar()
 
     with ui.column().classes('w-full max-w-2xl mx-auto p-6'):

@@ -15,7 +15,8 @@ def create_sidebar():
         ui.label('MENU').classes('text-overline text-grey-5 q-pa-md')
 
         nav_items = [
-            ('/', 'Nova Nota', 'add_circle'),
+            ('/', 'Inicio', 'home'),
+            ('/new', 'Nova Nota', 'add_circle'),
             ('/notes', 'Banco de Notas', 'library_books'),
             ('/tags', 'Gerenciar Tags', 'sell'),
             ('/fontmap', 'Mapa de Fontes', 'pie_chart'),

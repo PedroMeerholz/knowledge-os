@@ -240,7 +240,7 @@ def generate_placeholder_recommendations(message: str) -> list[dict]:
         if results:
             return results
 
-    return random.sample(RECOMMENDATION_POOL, min(4, len(RECOMMENDATION_POOL)))
+    return random.sample(RECOMMENDATION_POOL, min(5, len(RECOMMENDATION_POOL)))
 
 
 # ---------------------------------------------------------------------------

@@ -1,123 +1,117 @@
-# AstroMetrics
+# Knowledge OS
 
-An interactive web application for students to explore and learn about the planets of our solar system. Built with NiceGUI and FastAPI, it features AI-powered descriptions, planet similarity analysis, and side-by-side comparisons.
+Sistema pessoal de gestao de conhecimento construido com Python e NiceGUI.
 
----
+## O Problema
 
-## Features
+Quem estuda por diferentes fontes -- livros, videos, artigos, podcasts, cursos -- acaba com anotacoes espalhadas em cadernos, apps e arquivos soltos. Com o tempo, fica dificil:
 
-### 1. Planet List
-Browse all 9 planets (Mercury through Pluto) displayed as interactive cards. Each card shows the planet's image, type, diameter, moon count, and temperature range.
+- **Reencontrar** uma anotacao especifica feita meses atras
+- **Saber de onde veio** cada informacao (qual livro, qual video, qual autor)
+- **Enxergar padroes** nos proprios estudos (que tipo de fonte voce mais consome? quais temas domina?)
+- **Descobrir lacunas** e receber sugestoes de novas fontes para estudar
 
-### 2. LLM Planet Overview
-Select any planet to receive an AI-generated description written in simple, engaging language for students. Powered by OpenAI's `gpt-4o-mini` model, the description streams in real time.
+## A Solucao
 
-### 3. Planet Similarity
-Choose a planet and discover which others are most physically similar. Similarity is computed using cosine similarity across 7 numerical features: mass, diameter, distance from the Sun, moon count, minimum/maximum temperature, and orbital period.
+O Knowledge OS centraliza todas as suas anotacoes em um unico lugar com metadados ricos (fonte, autor, tipo, tags) e oferece ferramentas visuais para explorar e consultar sua base de conhecimento.
 
-### 4. Comparative Table
-Select two or more planets and compare their characteristics side by side in a dynamic table covering type, mass, diameter, distance, moons, rings, temperatures, orbital period, and atmosphere.
+### Funcionalidades
 
----
+| Pagina | Descricao |
+|--------|-----------|
+| **Nova Nota** | Formulario para criar notas com titulo, conteudo, tipo de fonte, nome da fonte, autor e tags |
+| **Banco de Notas** | Lista todas as notas com busca por texto e filtro por tipo de fonte. Permite editar e excluir notas |
+| **Gerenciar Tags** | Criacao e exclusao de tags para categorizar suas notas |
+| **Mapa de Fontes** | Graficos (rosca e barras) mostrando a distribuicao dos tipos de fontes e tabela com todas as fontes utilizadas |
+| **Recomendacoes** | Pagina para recomendacoes de novas fontes geradas por IA (em desenvolvimento -- conteudo estatico por enquanto) |
+| **Chat de Conhecimento** | Interface de chat estilo ChatGPT para consultar suas notas via linguagem natural (interface pronta, modulo de IA pendente) |
 
-## Tech Stack
+## Arquitetura
 
-| Layer | Technology |
-|-------|-----------|
-| UI | [NiceGUI](https://nicegui.io/) 3.x |
-| API | [FastAPI](https://fastapi.tiangolo.com/) (via NiceGUI's internal app) |
-| AI | [OpenAI Python SDK](https://github.com/openai/openai-python) (`gpt-4o-mini`) |
-| Similarity | [scikit-learn](https://scikit-learn.org/) — MinMaxScaler + cosine_similarity |
-| Data | Local JSON file (`data/planets.json`) |
-| Runtime | Python 3.13, uvicorn |
-
----
-
-## Setup
-
-### 1. Clone the repository
-
-```bash
-git clone <repo-url>
-cd planet-start
+```
+knowledge-os/
+├── main.py                # Ponto de entrada: importa paginas, define tema, inicia servidor
+├── components.py          # Barra lateral de navegacao compartilhada
+├── models.py              # Tipos de fonte e dataclass Note
+├── storage.py             # Operacoes CRUD em JSON (notas e tags)
+├── requirements.txt       # Dependencia: nicegui>=2.0.0
+├── data/
+│   ├── notes.json         # Banco de dados de notas (criado automaticamente)
+│   └── tags.json          # Banco de dados de tags (criado automaticamente)
+└── pages/
+    ├── note_form.py       # Pagina: criar nova nota
+    ├── notes_db.py        # Pagina: listar, buscar, editar e excluir notas
+    ├── tags.py            # Pagina: gerenciar tags
+    ├── fontmap.py         # Pagina: graficos e tabela de fontes
+    ├── recommendations.py # Pagina: recomendacoes de fontes (estatico)
+    └── chat.py            # Pagina: chat de conhecimento (placeholder)
 ```
 
-### 2. Create and activate the virtual environment
+### Stack Tecnica
+
+- **Interface**: [NiceGUI](https://nicegui.io/) (Python, baseado em Vue.js/Quasar/FastAPI)
+- **Banco de dados**: Arquivos JSON locais
+- **Graficos**: Apache ECharts (via NiceGUI)
+- **Dependencias externas**: Apenas `nicegui`
+
+## Como Executar
+
+### Pre-requisitos
+
+- Python 3.10 ou superior
+
+### Instalacao
 
 ```bash
+# Clonar ou acessar o diretorio do projeto
+cd knowledge-os
+
+# Criar ambiente virtual
 python -m venv venv
-# Windows
+
+# Ativar ambiente virtual (Windows)
 venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
-```
 
-### 3. Install dependencies
-
-```bash
+# Instalar dependencias
 pip install -r requirements.txt
 ```
 
-### 4. Configure your OpenAI API key
-
-Edit the `.env` file and replace the placeholder with your real key:
-
-```
-OPENAI_API_KEY=your-key-here
-```
-
-You can get an API key at [platform.openai.com](https://platform.openai.com/api-keys).
-
-### 5. Run the application
+### Execucao
 
 ```bash
 python main.py
 ```
 
-Open your browser at **http://localhost:8080**.
+O sistema estara disponivel em **http://localhost:3000**.
 
----
+## Estrutura dos Dados
 
-## Project Structure
+### Nota (`data/notes.json`)
 
-```
-planet-start/
-├── main.py                  # Application entry point
-├── requirements.txt         # Python dependencies
-├── .env                     # API key (not committed)
-├── data/
-│   └── planets.json         # Planet data (9 planets)
-└── app/
-    ├── config.py            # Settings and constants
-    ├── models/
-    │   └── planet.py        # Pydantic data models
-    ├── services/
-    │   ├── planet_service.py    # Load planets from JSON
-    │   ├── llm_service.py       # OpenAI streaming
-    │   └── similarity_service.py # Cosine similarity
-    ├── api/
-    │   ├── planets.py       # REST: GET /api/planets
-    │   └── similarity.py    # REST: GET /api/similarity/{id}
-    └── ui/
-        ├── layout.py        # Shared header & navigation
-        ├── components/
-        │   └── planet_card.py   # Reusable planet card
-        └── pages/
-            ├── home.py      # Planet list (/)
-            ├── overview.py  # LLM overview (/overview)
-            ├── similarity.py # Similarity (/similarity)
-            └── comparison.py # Compare table (/comparison)
+```json
+{
+  "id": "uuid",
+  "title": "Titulo da nota",
+  "content": "Conteudo em texto",
+  "source_type": "livro|video|artigo|podcast|curso|outro",
+  "source_name": "Nome da fonte",
+  "source_author": "Autor da fonte",
+  "tags": ["tag1", "tag2"],
+  "created_at": "2026-02-19T14:30:00"
+}
 ```
 
----
+### Tag (`data/tags.json`)
 
-## REST API
+```json
+{
+  "id": "uuid",
+  "name": "nome-da-tag"
+}
+```
 
-The app also exposes a REST API you can query directly:
+## Proximos Passos
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/planets` | List all planets |
-| `GET /api/planets/{id}` | Get a single planet by ID (e.g. `earth`) |
-| `GET /api/similarity/{id}` | Get top-N similar planets for a given planet |
-| `GET /api/similarity/{id}?top_n=5` | Control how many similar planets are returned |
+- Integracao com LLM para o Chat de Conhecimento (busca semantica nas notas)
+- Integracao com LLM para Recomendacoes (analise das ultimas 100 notas para sugerir novas fontes)
+- Exportacao de notas (PDF, Markdown)

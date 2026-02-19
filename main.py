@@ -1,34 +1,21 @@
-from dotenv import load_dotenv
+from nicegui import app, ui
 
-load_dotenv()  # must be before any service imports that read env vars
+# Importa os modulos de paginas para registrar as rotas via @ui.page
+from pages import note_form  # noqa: F401
+from pages import notes_db   # noqa: F401
+from pages import tags        # noqa: F401
+from pages import fontmap     # noqa: F401
+from pages import recommendations  # noqa: F401
+from pages import chat        # noqa: F401
 
-from nicegui import ui, app as nicegui_app  # noqa: E402
+# Tema global
+app.colors(
+    primary='#1a1a2e',
+    secondary='#16213e',
+    accent='#0f3460',
+    positive='#53d769',
+    negative='#ff4757',
+    warning='#ffa502',
+)
 
-from app.api.planets import router as planets_router  # noqa: E402
-from app.api.similarity import router as similarity_router  # noqa: E402
-from app.services.llm_service import clear_description_cache  # noqa: E402
-from app.ui.pages.home import home_page  # noqa: E402
-from app.ui.pages.overview import overview_page  # noqa: E402
-from app.ui.pages.similarity import similarity_page  # noqa: E402
-from app.ui.pages.comparison import comparison_page  # noqa: E402
-
-# Attach REST API routers to NiceGUI's internal FastAPI instance
-nicegui_app.include_router(planets_router)
-nicegui_app.include_router(similarity_router)
-
-# Clear LLM description cache on shutdown
-nicegui_app.on_shutdown(clear_description_cache)
-
-# Register NiceGUI pages
-ui.page("/")(home_page)
-ui.page("/overview")(overview_page)
-ui.page("/similarity")(similarity_page)
-ui.page("/comparison")(comparison_page)
-
-if __name__ in {"__main__", "__mp_main__"}:
-    ui.run(
-        title="AstroMetrics",
-        port=8080,
-        reload=False,
-        favicon="🪐",
-    )
+ui.run(title='Knowledge OS', port=3000, reload=True)

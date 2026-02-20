@@ -83,7 +83,7 @@ knowledge-os/
 | Onde a experiência foi positiva? | Desenvolvimento rápido e preciso |
 | Exemplos específicos de prompts que deram bons resultados | Merge the chat page and recomendation page. On the left side, I want the chat and in the right side I want the recomendation system. Then, refactor the recomendation to be connected with the chat. When the user ask a question, the recommendation system search in web for knowledgements fonts to complement the user question. Each recommendation needs to have a short summary to help user to understand why the recommendation is available for him. |
 
-**Evidência de Prompt**
+**Evidência de Prompt (/data/readme)**
 
 ![Prompt inicial](/data/readme/Notes%20Claude%20Evidence.png "Optional title")
 

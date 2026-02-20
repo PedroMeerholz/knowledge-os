@@ -72,9 +72,9 @@ knowledge-os/
 **Escolhas de design**
 | Pergunta | Resposta |
 | -------- | -------- |
-| Por que essa arquitetura? | ? | 
+| Por que essa arquitetura? | Optei por estas tecnologias por ter maior conhecimento técnico e experiência. Dessa forma, caso fosse necessário a intervenção manual no código, a manutenção seria mais eficaz | 
 | Por que esses componentes de UI? | A escolha dos componentes foi realizada com base na premissa de manter o sistema com uma interface gráfica minimalista e intuitiva | 
-| Que alternativas foram consideradas? | ? |
+| Que alternativas foram consideradas? | Considerei utilizar outros frameworks para criar a interface gráfica, como React e Vue.js. Porém, para manter todo o projeto em linguagem Python, optei por usar a biblioteca NiceGUI |
 
 **O que funcionou?**
 | Pergunta | Resposta |
@@ -82,6 +82,10 @@ knowledge-os/
 | Quais partes o agente de codificação gerou bem? | O agente fez uma boa codificação ao criar as funcionalidades da interface gráfica |
 | Onde a experiência foi positiva? | Desenvolvimento rápido e preciso |
 | Exemplos específicos de prompts que deram bons resultados | Merge the chat page and recomendation page. On the left side, I want the chat and in the right side I want the recomendation system. Then, refactor the recomendation to be connected with the chat. When the user ask a question, the recommendation system search in web for knowledgements fonts to complement the user question. Each recommendation needs to have a short summary to help user to understand why the recommendation is available for him. |
+
+**Evidência de Prompt**
+
+![Prompt inicial](/data/readme/Notes%20Claude%20Evidence.png "Optional title")
 
 **O que não funcionou** 
 | Pergunta | Resposta |

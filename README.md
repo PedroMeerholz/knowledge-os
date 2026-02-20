@@ -1,4 +1,13 @@
-# Knowledge OS
+---
+title: Knowledge OS
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
+# Knowledge OS | [Acessar Plataforma](https://huggingface.co/spaces/pedromeerholz/knowledge-os)
 
 Sistema pessoal de gestao de conhecimento construido com Python e NiceGUI.
 

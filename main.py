@@ -19,4 +19,4 @@ app.colors(
     warning='#ffa502',
 )
 
-ui.run(title='Knowledge OS', port=3000, reload=True)
+ui.run(title='Knowledge OS', host='0.0.0.0', port=7860, reload=False)

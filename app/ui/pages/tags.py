@@ -1,7 +1,7 @@
 from nicegui import ui
 
-from components import create_sidebar
-from storage import load_tags, save_tag, delete_tag
+from app.ui.components import create_sidebar
+from app.storage import load_tags, save_tag, delete_tag
 
 
 @ui.page('/tags')

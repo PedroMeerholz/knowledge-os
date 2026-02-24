@@ -1,10 +1,8 @@
 import json
 import uuid
-from pathlib import Path
 from datetime import datetime
 
-DATA_FILE = Path(__file__).parent / 'data' / 'notes.json'
-TAGS_FILE = Path(__file__).parent / 'data' / 'tags.json'
+from app.config import NOTES_FILE as DATA_FILE, TAGS_FILE
 
 
 def _ensure_file():
@@ -40,6 +38,11 @@ def save_note(title: str, content: str, source_type: str,
     notes.append(note)
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump({'notes': notes}, f, indent=2, ensure_ascii=False)
+    try:
+        from app.services import rag_service
+        rag_service.add_note(note)
+    except Exception:
+        pass
     return note
 
 
@@ -51,6 +54,11 @@ def delete_note(note_id: str) -> bool:
     if len(notes) < original_len:
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump({'notes': notes}, f, indent=2, ensure_ascii=False)
+        try:
+            from app.services import rag_service
+            rag_service.delete_note(note_id)
+        except Exception:
+            pass
         return True
     return False
 
@@ -69,6 +77,11 @@ def update_note(note_id: str, title: str, content: str, source_type: str,
             note['tags'] = [t.strip().lower() for t in tags if t.strip()]
             with open(DATA_FILE, 'w', encoding='utf-8') as f:
                 json.dump({'notes': notes}, f, indent=2, ensure_ascii=False)
+            try:
+                from app.services import rag_service
+                rag_service.update_note(note_id, note)
+            except Exception:
+                pass
             return True
     return False
 

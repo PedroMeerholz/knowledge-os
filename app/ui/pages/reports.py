@@ -2,8 +2,8 @@ from collections import Counter
 
 from nicegui import ui
 
-from components import create_sidebar
-from storage import load_notes, load_tags
+from app.ui.components import create_sidebar
+from app.storage import load_notes, load_tags
 
 MIN_NOTES_PER_TAG = 10
 

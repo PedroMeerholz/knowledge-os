@@ -1,8 +1,8 @@
 from nicegui import ui
 
-from components import create_sidebar
-from models import SOURCE_TYPES
-from storage import load_notes, delete_note, update_note, load_tags
+from app.ui.components import create_sidebar
+from app.models import SOURCE_TYPES
+from app.storage import load_notes, delete_note, update_note, load_tags
 
 
 @ui.page('/notes')

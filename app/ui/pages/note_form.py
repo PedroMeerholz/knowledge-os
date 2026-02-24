@@ -2,9 +2,9 @@ from datetime import datetime
 
 from nicegui import ui
 
-from components import create_sidebar
-from models import SOURCE_TYPES
-from storage import save_note, load_tags
+from app.ui.components import create_sidebar
+from app.models import SOURCE_TYPES
+from app.storage import save_note, load_tags
 
 
 @ui.page('/new')

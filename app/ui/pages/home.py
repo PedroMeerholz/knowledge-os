@@ -2,9 +2,9 @@ from collections import Counter
 
 from nicegui import ui
 
-from components import create_sidebar
-from models import SOURCE_TYPES
-from storage import load_notes, load_tags
+from app.ui.components import create_sidebar
+from app.models import SOURCE_TYPES
+from app.storage import load_notes, load_tags
 
 
 @ui.page('/')

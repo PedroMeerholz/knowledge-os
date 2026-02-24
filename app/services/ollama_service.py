@@ -4,16 +4,9 @@ Modulo standalone de integracao com o Ollama local.
 Conecta ao servidor Ollama via API REST e utiliza o modelo ministral:8b.
 """
 
-import os
-
 import httpx
 
-# ---------------------------------------------------------------------------
-# Configuracao
-# ---------------------------------------------------------------------------
-OLLAMA_BASE_URL: str = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
-OLLAMA_MODEL: str = os.environ.get('OLLAMA_MODEL', 'ministral:8b')
-OLLAMA_TIMEOUT: float = float(os.environ.get('OLLAMA_TIMEOUT', '120'))
+from app.config import OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT
 
 
 # ---------------------------------------------------------------------------

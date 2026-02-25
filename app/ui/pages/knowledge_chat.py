@@ -28,12 +28,12 @@ def knowledge_chat_page():
 
         chat_history = []
 
-        with ui.row().classes('w-full flex-grow gap-4') \
+        with ui.column().classes('w-full flex-grow gap-4') \
                 .style('min-height: 0'):
 
-            # ---- LADO ESQUERDO: Chat ----
-            with ui.column().classes('flex-[3] min-w-0') \
-                    .style('height: 100%'):
+            # ---- Chat ----
+            with ui.column().classes('w-full min-w-0 flex-[3]') \
+                    .style('min-height: 0'):
                 with ui.scroll_area() \
                         .classes('flex-grow w-full border rounded-lg bg-grey-1') as scroll:
                     messages = ui.column().classes('w-full q-pa-md gap-2')
@@ -41,7 +41,7 @@ def knowledge_chat_page():
                         ui.chat_message(
                             "Ola! Eu sou o assistente do Knowledge OS. "
                             "Me pergunte qualquer coisa sobre suas notas — "
-                            "ao lado, voce vera as fontes mais relevantes "
+                            "abaixo, voce vera as fontes mais relevantes "
                             "encontradas na sua base de conhecimento.",
                             name='KnowledgeBot',
                             stamp='agora',
@@ -105,9 +105,9 @@ def knowledge_chat_page():
                         .props('round color=primary')
                     msg_input.on('keydown.enter', send)
 
-            # ---- LADO DIREITO: Fontes Relacionadas ----
-            with ui.column().classes('flex-[2] min-w-0') \
-                    .style('height: 100%'):
+            # ---- ABAIXO: Fontes Relacionadas ----
+            with ui.column().classes('w-full min-w-0 flex-[1]') \
+                    .style('min-height: 0'):
                 ui.label('Fontes Relacionadas').classes('text-h6 q-mb-sm')
 
                 status_container = ui.column().classes('w-full')

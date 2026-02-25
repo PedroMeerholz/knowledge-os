@@ -1,6 +1,10 @@
 from nicegui import run, ui
 
+from app.config import MAX_CHATS
 from app.services import tool_service
+from app.storage import (
+    count_chats, delete_chat, get_chat, load_chats, save_chat, update_chat,
+)
 from app.ui.components import create_sidebar
 
 # ---------------------------------------------------------------------------
@@ -23,51 +27,87 @@ TYPE_ICONS = {
 def knowledge_chat_page():
     create_sidebar()
 
+    current_chat_id = None
+    chat_history = []
+
     with ui.column().classes('w-full p-4').style('height: calc(100vh - 4rem)'):
         ui.label('Assistente Virtual').classes('text-h4 q-mb-md')
 
-        chat_history = []
-
-        with ui.column().classes('w-full flex-grow gap-4') \
+        with ui.row().classes('w-full flex-grow gap-4') \
                 .style('min-height: 0'):
 
-            # ---- Chat ----
-            with ui.column().classes('w-full min-w-0 flex-[3]') \
+            # ---- LEFT: Chat Sidebar ----
+            with ui.column().classes('min-w-0 border-r q-pr-sm flex-[3]') \
+                    .style('min-height: 0'):
+
+                with ui.row().classes('w-full items-center q-pa-sm'):
+                    ui.label('Conversas') \
+                        .classes('text-subtitle1 font-bold flex-grow')
+                    chat_count_label = ui.label(
+                        f'{count_chats()}/{MAX_CHATS}'
+                    ).classes('text-caption text-grey-6')
+
+                ui.button(
+                    'Novo Chat', icon='add',
+                    on_click=lambda: handle_new_chat(),
+                ).classes('w-full q-mb-sm') \
+                    .props('outline dense color=primary no-caps')
+
+                ui.separator()
+
+                with ui.scroll_area().classes('flex-grow w-full'):
+                    sidebar_list = ui.column().classes('w-full gap-1 q-pa-xs')
+
+            # ---- CENTER: Chat ----
+            with ui.column().classes('min-w-0 flex-[7]') \
                     .style('min-height: 0'):
                 with ui.scroll_area() \
-                        .classes('flex-grow w-full border rounded-lg bg-grey-1') as scroll:
+                        .classes('flex-grow w-full border rounded-lg '
+                                 'bg-grey-1') as scroll:
                     messages = ui.column().classes('w-full q-pa-md gap-2')
-                    with messages:
-                        ui.chat_message(
-                            "Ola! Eu sou o assistente do Knowledge OS. "
-                            "Me pergunte qualquer coisa sobre suas notas — "
-                            "abaixo, voce vera as fontes mais relevantes "
-                            "encontradas na sua base de conhecimento.",
-                            name='KnowledgeBot',
-                            stamp='agora',
-                        )
 
                 with ui.row().classes('w-full gap-2 q-mt-sm items-center'):
-                    msg_input = ui.input(placeholder='Digite uma mensagem...') \
-                        .classes('flex-grow').props('outlined dense')
+                    msg_input = ui.input(
+                        placeholder='Digite uma mensagem...',
+                    ).classes('flex-grow').props('outlined dense')
 
                     async def send():
+                        nonlocal current_chat_id
                         text = (msg_input.value or '').strip()
                         if not text:
                             return
 
-                        chat_history.append({'role': 'user', 'content': text})
+                        if current_chat_id is None \
+                                and len(chat_history) == 0:
+                            if count_chats() >= MAX_CHATS:
+                                ui.notify(
+                                    f'Limite de {MAX_CHATS} conversas '
+                                    'atingido! Exclua uma conversa antes '
+                                    'de iniciar uma nova.',
+                                    type='warning',
+                                )
+                                return
+
+                        chat_history.append(
+                            {'role': 'user', 'content': text},
+                        )
 
                         with messages:
-                            ui.chat_message(text, name='Voce', sent=True)
+                            ui.chat_message(
+                                text, name='Voce', sent=True,
+                            )
                         msg_input.value = ''
 
                         with messages:
-                            loading_msg = ui.row().classes('items-center gap-2 q-pa-sm')
+                            loading_msg = ui.row() \
+                                .classes('items-center gap-2 q-pa-sm')
                             with loading_msg:
-                                ui.spinner('dots', size='2em', color='primary')
-                                ui.label('Buscando nas suas notas...') \
-                                    .classes('text-grey-7 text-caption')
+                                ui.spinner(
+                                    'dots', size='2em', color='primary',
+                                )
+                                ui.label(
+                                    'Buscando nas suas notas...',
+                                ).classes('text-grey-7 text-caption')
                         scroll.scroll_to(percent=1.0)
 
                         msg_input.props('disable')
@@ -75,11 +115,13 @@ def knowledge_chat_page():
 
                         try:
                             result = await run.io_bound(
-                                tool_service.chat_with_tools, chat_history,
+                                tool_service.chat_with_tools,
+                                chat_history,
                             )
                         except Exception as e:
                             result = {
-                                'answer': f'Erro inesperado ao consultar a base de conhecimento: {e}',
+                                'answer': 'Erro inesperado ao consultar '
+                                          f'a base de conhecimento: {e}',
                                 'sources': [],
                                 'llm_available': False,
                                 'tool_used': False,
@@ -88,71 +130,199 @@ def knowledge_chat_page():
                         chat_history.append({
                             'role': 'assistant',
                             'content': result['answer'],
+                            'sources': list(result['sources']),
                         })
 
                         messages.remove(loading_msg)
                         with messages:
-                            ui.chat_message(result['answer'], name='KnowledgeBot')
+                            ui.chat_message(
+                                result['answer'], name='KnowledgeBot',
+                            )
                             if result['sources']:
                                 response_sources = list(result['sources'])
-                                def _show_sources(sources=response_sources):
+
+                                def _show_sources(
+                                    sources=response_sources,
+                                ):
                                     _open_sources_dialog(sources)
-                                ui.button('Ver Fontes', icon='source',
-                                          on_click=_show_sources) \
-                                    .props('flat dense size=sm color=primary')
+
+                                ui.button(
+                                    'Ver Fontes', icon='source',
+                                    on_click=_show_sources,
+                                ).props(
+                                    'flat dense size=sm color=primary',
+                                )
                         scroll.scroll_to(percent=1.0)
 
                         msg_input.props(remove='disable')
                         send_btn.props(remove='disable')
                         msg_input.run_method('focus')
 
-                        _update_sources(result['sources'], result['llm_available'])
+                        # ---- AUTO-SAVE ----
+                        if current_chat_id is None:
+                            title = chat_history[0]['content'][:50]
+                            new_chat = save_chat(
+                                title, list(chat_history),
+                            )
+                            if new_chat is not None:
+                                current_chat_id = new_chat['id']
+                            else:
+                                ui.notify(
+                                    f'Limite de {MAX_CHATS} conversas '
+                                    'atingido. Conversa nao foi salva.',
+                                    type='warning',
+                                )
+                        else:
+                            update_chat(
+                                current_chat_id, list(chat_history),
+                            )
+                        render_chat_sidebar()
 
                     send_btn = ui.button(icon='send', on_click=send) \
                         .props('round color=primary')
                     msg_input.on('keydown.enter', send)
 
-            # ---- ABAIXO: Fontes Relacionadas ----
-            with ui.column().classes('w-full min-w-0 flex-[1]') \
-                    .style('min-height: 0'):
-                ui.label('Fontes Relacionadas').classes('text-h6 q-mb-sm')
+    # -------------------------------------------------------------------
+    # Helper functions (closures over UI containers)
+    # -------------------------------------------------------------------
 
-                status_container = ui.column().classes('w-full')
+    def render_chat_sidebar():
+        """Re-render the conversations list in the sidebar."""
+        sidebar_list.clear()
+        chats = load_chats()
+        chat_count_label.text = f'{len(chats)}/{MAX_CHATS}'
 
-                rec_scroll = ui.scroll_area().classes('flex-grow w-full')
-                rec_container = ui.column().classes('w-full gap-2 q-pa-xs')
-                rec_scroll.content = rec_container
+        if not chats:
+            with sidebar_list:
+                ui.label('Nenhuma conversa salva.').classes(
+                    'text-caption text-grey-6 q-pa-md text-center w-full',
+                )
+            return
 
-                with rec_container:
-                    ui.label('Faca uma pergunta para ver fontes relacionadas.') \
-                        .classes('text-caption text-grey-6 q-pa-md text-center w-full')
+        with sidebar_list:
+            for chat in chats:
+                is_active = (chat['id'] == current_chat_id)
+                bg_class = 'bg-blue-1' if is_active else ''
 
-    def _update_sources(sources: list[dict], llm_available: bool):
-        status_container.clear()
-        if not llm_available:
-            with status_container:
-                with ui.element('div').classes(
-                    'w-full rounded-lg q-pa-sm q-mb-sm flex items-start gap-2'
-                ).style('background-color: #e3f2fd; border: 1px solid #90caf9;'):
-                    ui.icon('info', color='blue-7').classes('text-xl mt-1')
-                    ui.label(
-                        'O modelo de IA (Ollama) esta offline. '
-                        'As respostas usam apenas busca nas notas.'
-                    ).classes('text-caption text-blue-9')
+                with ui.card() \
+                        .classes(f'w-full q-pa-xs cursor-pointer {bg_class}') \
+                        .props('flat bordered') as card:
+                    with ui.row().classes('items-center w-full no-wrap'):
+                        with ui.column() \
+                                .classes('flex-grow gap-0 overflow-hidden'):
+                            ui.label(chat['title']).classes(
+                                'text-body2 font-bold',
+                            ).style(
+                                'white-space: nowrap; overflow: hidden; '
+                                'text-overflow: ellipsis;',
+                            )
+                            ui.label(chat['updated_at'][:10]).classes(
+                                'text-caption text-grey-6',
+                            )
 
-        rec_container.clear()
-        with rec_container:
-            if sources:
-                _render_sources(sources)
-            else:
-                ui.label('Nenhuma fonte relacionada encontrada.') \
-                    .classes('text-caption text-grey-6 q-pa-md text-center w-full')
+                        def _make_delete(cid=chat['id'], ctitle=chat['title']):
+                            def _do():
+                                confirm_delete_chat(cid, ctitle)
+                            return _do
+
+                        ui.button(
+                            icon='close',
+                        ).on(
+                            'click.stop', _make_delete(),
+                        ).props('flat round dense size=sm color=negative')
+
+                    def _make_load(cid=chat['id']):
+                        return lambda: load_conversation(cid)
+
+                    card.on('click', _make_load())
+
+    def render_messages():
+        """Clear and re-render all messages from chat_history."""
+        messages.clear()
+        with messages:
+            ui.chat_message(
+                "Ola! Eu sou o assistente do Knowledge OS. "
+                "Me pergunte qualquer coisa sobre suas notas.",
+                name='KnowledgeBot',
+                stamp='agora',
+            )
+            for msg in chat_history:
+                if msg['role'] == 'user':
+                    ui.chat_message(msg['content'], name='Voce', sent=True)
+                elif msg['role'] == 'assistant':
+                    ui.chat_message(msg['content'], name='KnowledgeBot')
+                    sources = msg.get('sources', [])
+                    if sources:
+                        def _show(s=list(sources)):
+                            _open_sources_dialog(s)
+
+                        ui.button(
+                            'Ver Fontes', icon='source',
+                            on_click=_show,
+                        ).props('flat dense size=sm color=primary')
+        scroll.scroll_to(percent=1.0)
+
+    def handle_new_chat():
+        nonlocal current_chat_id
+        if count_chats() >= MAX_CHATS:
+            ui.notify(
+                f'Limite de {MAX_CHATS} conversas atingido! '
+                'Exclua uma conversa antes de criar uma nova.',
+                type='warning',
+            )
+            return
+        current_chat_id = None
+        chat_history.clear()
+        render_messages()
+        render_chat_sidebar()
+
+    def load_conversation(chat_id: str):
+        nonlocal current_chat_id
+        chat = get_chat(chat_id)
+        if chat is None:
+            ui.notify('Conversa nao encontrada.', type='negative')
+            return
+        current_chat_id = chat['id']
+        chat_history.clear()
+        chat_history.extend(chat['messages'])
+        render_messages()
+        render_chat_sidebar()
+
+    def confirm_delete_chat(chat_id: str, chat_title: str):
+        nonlocal current_chat_id
+
+        with ui.dialog() as dlg, ui.card():
+            ui.label(f'Excluir "{chat_title}"?').classes('text-h6')
+            ui.label('Esta acao nao pode ser desfeita.')
+            with ui.row().classes('q-mt-md gap-2'):
+                ui.button('Cancelar', on_click=dlg.close).props('flat')
+
+                def do_delete():
+                    nonlocal current_chat_id
+                    delete_chat(chat_id)
+                    dlg.close()
+                    if current_chat_id == chat_id:
+                        current_chat_id = None
+                        chat_history.clear()
+                        render_messages()
+                    render_chat_sidebar()
+
+                ui.button(
+                    'Excluir', color='negative', on_click=do_delete,
+                ).props('flat')
+        dlg.open()
+
+    # Initial render
+    render_messages()
+    render_chat_sidebar()
 
 
 def _open_sources_dialog(sources: list[dict]):
     """Abre um dialog popup minimalista exibindo as fontes usadas na resposta."""
-    with ui.dialog() as dialog, ui.card().classes('q-pa-md').style('min-width: 320px'):
-        ui.label('Fontes').classes('text-subtitle1 text-weight-medium q-mb-sm')
+    with ui.dialog() as dialog, \
+            ui.card().classes('q-pa-md').style('min-width: 320px'):
+        ui.label('Fontes') \
+            .classes('text-subtitle1 text-weight-medium q-mb-sm')
         ui.separator()
         for src in sources:
             with ui.row().classes('items-center gap-2 q-py-xs'):
@@ -164,36 +334,6 @@ def _open_sources_dialog(sources: list[dict]):
                 ui.label(label).classes('text-body2 text-grey-9')
         ui.separator().classes('q-mt-xs')
         with ui.row().classes('w-full justify-end q-mt-sm'):
-            ui.button('Fechar', on_click=dialog.close).props('flat dense size=sm')
+            ui.button('Fechar', on_click=dialog.close) \
+                .props('flat dense size=sm')
     dialog.open()
-
-
-def _render_sources(sources: list[dict]):
-    """Renderiza cards de fontes recuperadas pelo RAG."""
-    for src in sources:
-        icon = TYPE_ICONS.get(src.get('source_type', ''), 'lightbulb')
-        with ui.card().classes('w-full q-pa-sm'):
-            with ui.row().classes('items-start gap-3 w-full'):
-                ui.icon(icon, color='primary').classes('text-2xl mt-1')
-                with ui.column().classes('flex-grow gap-0'):
-                    ui.label(src.get('title', 'Sem titulo')) \
-                        .classes('text-subtitle1 font-bold')
-                    with ui.row().classes('gap-2 items-center'):
-                        source_type = src.get('source_type', '')
-                        if source_type:
-                            ui.chip(source_type, color='primary') \
-                                .props('dense outline size=sm')
-                        author = src.get('source_author', '')
-                        if author:
-                            ui.label(f"por {author}") \
-                                .classes('text-caption text-grey-8')
-                    source_name = src.get('source_name', '')
-                    if source_name:
-                        ui.label(source_name) \
-                            .classes('text-caption text-grey-8 q-mt-xs')
-                    tags = src.get('tags', [])
-                    if tags:
-                        with ui.row().classes('gap-1 q-mt-xs flex-wrap'):
-                            for tag in tags:
-                                ui.chip(tag, color='grey-4') \
-                                    .props('dense outline size=sm')

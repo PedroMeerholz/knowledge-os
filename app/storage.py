@@ -2,7 +2,7 @@ import json
 import uuid
 from datetime import datetime
 
-from app.config import NOTES_FILE as DATA_FILE, TAGS_FILE
+from app.config import NOTES_FILE as DATA_FILE, TAGS_FILE, CHATS_FILE, MAX_CHATS
 
 
 def _ensure_file():
@@ -132,3 +132,94 @@ def delete_tag(tag_id: str) -> bool:
             json.dump({'tags': tags}, f, indent=2, ensure_ascii=False)
         return True
     return False
+
+
+# --- Chat operations ---
+
+def _ensure_chats_file():
+    """Create chats.json if it doesn't exist."""
+    CHATS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if not CHATS_FILE.exists():
+        CHATS_FILE.write_text(json.dumps({'chats': []}, indent=2), encoding='utf-8')
+
+
+def load_chats() -> list[dict]:
+    """Return all chats as a list of dicts, sorted by updated_at descending."""
+    _ensure_chats_file()
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    chats = data.get('chats', [])
+    return sorted(chats, key=lambda c: c.get('updated_at', ''), reverse=True)
+
+
+def get_chat(chat_id: str) -> dict | None:
+    """Return a single chat by ID, or None if not found."""
+    _ensure_chats_file()
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    for chat in data.get('chats', []):
+        if chat['id'] == chat_id:
+            return chat
+    return None
+
+
+def save_chat(title: str, messages: list[dict]) -> dict | None:
+    """Create a new chat. Returns the chat dict, or None if limit reached."""
+    _ensure_chats_file()
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    chats = data.get('chats', [])
+    if len(chats) >= MAX_CHATS:
+        return None
+    now = datetime.now().isoformat(timespec='seconds')
+    chat = {
+        'id': str(uuid.uuid4()),
+        'title': title[:50],
+        'messages': messages,
+        'created_at': now,
+        'updated_at': now,
+    }
+    chats.append(chat)
+    with open(CHATS_FILE, 'w', encoding='utf-8') as f:
+        json.dump({'chats': chats}, f, indent=2, ensure_ascii=False)
+    return chat
+
+
+def update_chat(chat_id: str, messages: list[dict],
+                title: str | None = None) -> bool:
+    """Update a chat's messages and updated_at. Optionally update title.
+    Returns True if found and updated."""
+    _ensure_chats_file()
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    chats = data.get('chats', [])
+    for chat in chats:
+        if chat['id'] == chat_id:
+            chat['messages'] = messages
+            if title is not None:
+                chat['title'] = title[:50]
+            chat['updated_at'] = datetime.now().isoformat(timespec='seconds')
+            with open(CHATS_FILE, 'w', encoding='utf-8') as f:
+                json.dump({'chats': chats}, f, indent=2, ensure_ascii=False)
+            return True
+    return False
+
+
+def delete_chat(chat_id: str) -> bool:
+    """Delete chat by ID. Returns True if found and deleted."""
+    _ensure_chats_file()
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    chats = data.get('chats', [])
+    original_len = len(chats)
+    chats = [c for c in chats if c['id'] != chat_id]
+    if len(chats) < original_len:
+        with open(CHATS_FILE, 'w', encoding='utf-8') as f:
+            json.dump({'chats': chats}, f, indent=2, ensure_ascii=False)
+        return True
+    return False
+
+
+def count_chats() -> int:
+    """Return the number of saved chats."""
+    return len(load_chats())

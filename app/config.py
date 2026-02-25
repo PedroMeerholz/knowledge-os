@@ -12,6 +12,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / 'data'
 NOTES_FILE = DATA_DIR / 'notes.json'
 TAGS_FILE = DATA_DIR / 'tags.json'
+CHATS_FILE = DATA_DIR / 'chats.json'
+MAX_CHATS = 10
 FAISS_INDEX_DIR: str = os.environ.get(
     'FAISS_INDEX_DIR',
     str(DATA_DIR / 'faiss_index'),

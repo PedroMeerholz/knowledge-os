@@ -19,7 +19,7 @@ FAISS_INDEX_DIR: str = os.environ.get(
 
 # --- Ollama settings ---
 OLLAMA_BASE_URL: str = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
-OLLAMA_MODEL: str = os.environ.get('OLLAMA_MODEL', 'ministral:8b')
+OLLAMA_MODEL: str = os.environ.get('OLLAMA_MODEL', 'ministral-3:3b')
 OLLAMA_TIMEOUT: float = float(os.environ.get('OLLAMA_TIMEOUT', '120'))
 
 # --- RAG settings ---

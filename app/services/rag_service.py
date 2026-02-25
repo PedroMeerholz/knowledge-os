@@ -191,24 +191,23 @@ def delete_note(note_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Consulta RAG
+# Recuperacao de notas (sem geracao LLM)
 # ---------------------------------------------------------------------------
-def query(question: str, source_type: str = '', tags: list[str] | None = None,
-          top_k: int = RAG_TOP_K) -> dict:
+def retrieve(question: str, source_type: str = '', tags: list[str] | None = None,
+             top_k: int = RAG_TOP_K) -> dict:
     """
-    Consulta a base de conhecimento usando RAG.
+    Recupera notas relevantes da base de conhecimento sem chamar o LLM.
 
     Args:
-        question: A pergunta do usuario.
+        question: A pergunta do usuario para busca semantica.
         source_type: Filtro opcional por tipo de fonte (ex: 'livro', 'video').
         tags: Filtro opcional por tags (notas que contenham QUALQUER uma das tags).
         top_k: Numero de documentos a recuperar.
 
     Returns:
         dict com:
-            'answer': str - A resposta gerada (ou mensagem de erro).
+            'context': str - Contexto formatado das notas encontradas.
             'sources': list[dict] - Metadados das notas recuperadas.
-            'llm_available': bool - Se o Ollama foi usado para geracao.
     """
     global _initialized
     if not _initialized:
@@ -216,13 +215,8 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
 
     vs = _get_vectorstore()
     if vs is None:
-        return {
-            'answer': 'A base de conhecimento esta vazia. Adicione notas primeiro.',
-            'sources': [],
-            'llm_available': False,
-        }
+        return {'context': '', 'sources': []}
 
-    # Recuperar mais documentos que o necessario para filtrar por metadados
     has_filter = bool(source_type or tags)
     fetch_k = top_k * 3 if has_filter else top_k
 
@@ -230,13 +224,8 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
         results = vs.similarity_search(question, k=fetch_k)
     except Exception as e:
         logger.error('Falha na busca vetorial: %s', e)
-        return {
-            'answer': 'Erro ao buscar notas no banco de conhecimento.',
-            'sources': [],
-            'llm_available': False,
-        }
+        return {'context': '', 'sources': []}
 
-    # Filtrar por metadados (FAISS nao suporta filtros nativos)
     if has_filter:
         filtered = []
         for doc in results:
@@ -253,13 +242,8 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
         results = results[:top_k]
 
     if not results:
-        return {
-            'answer': 'Nenhuma nota relevante encontrada na sua base de conhecimento.',
-            'sources': [],
-            'llm_available': False,
-        }
+        return {'context': '', 'sources': []}
 
-    # Formatar contexto a partir dos documentos recuperados
     context_parts = []
     sources = []
     for i, doc in enumerate(results, 1):
@@ -283,16 +267,51 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
         })
 
     context = '\n---\n'.join(context_parts)
+    return {'context': context, 'sources': sources}
 
-    # Gerar resposta usando Ollama via LangChain
+
+# ---------------------------------------------------------------------------
+# Consulta RAG (recuperacao + geracao)
+# ---------------------------------------------------------------------------
+def query(question: str, source_type: str = '', tags: list[str] | None = None,
+          top_k: int = RAG_TOP_K) -> dict:
+    """
+    Consulta a base de conhecimento usando RAG.
+
+    Args:
+        question: A pergunta do usuario.
+        source_type: Filtro opcional por tipo de fonte (ex: 'livro', 'video').
+        tags: Filtro opcional por tags (notas que contenham QUALQUER uma das tags).
+        top_k: Numero de documentos a recuperar.
+
+    Returns:
+        dict com:
+            'answer': str - A resposta gerada (ou mensagem de erro).
+            'sources': list[dict] - Metadados das notas recuperadas.
+            'llm_available': bool - Se o Ollama foi usado para geracao.
+    """
+    result = retrieve(question, source_type, tags, top_k)
+    context = result['context']
+    sources = result['sources']
+
+    if not sources:
+        if not _get_vectorstore():
+            msg = 'A base de conhecimento esta vazia. Adicione notas primeiro.'
+        else:
+            msg = 'Nenhuma nota relevante encontrada na sua base de conhecimento.'
+        return {
+            'answer': msg,
+            'sources': [],
+            'llm_available': False,
+        }
+
     llm_available = is_available()
     if not llm_available:
         answer = (
             'O modelo de IA (Ollama) nao esta disponivel no momento. '
             'Aqui estao as notas mais relevantes encontradas:'
         )
-        for part in context_parts:
-            answer += f'\n\n{part}'
+        answer += '\n\n' + context
         return {
             'answer': answer,
             'sources': sources,

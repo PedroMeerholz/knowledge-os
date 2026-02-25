@@ -1,6 +1,6 @@
 from nicegui import run, ui
 
-from app.services import rag_service
+from app.services import tool_service
 from app.ui.components import create_sidebar
 
 # ---------------------------------------------------------------------------
@@ -25,6 +25,8 @@ def knowledge_chat_page():
 
     with ui.column().classes('w-full p-4').style('height: calc(100vh - 4rem)'):
         ui.label('Assistente Virtual').classes('text-h4 q-mb-md')
+
+        chat_history = []
 
         with ui.row().classes('w-full flex-grow gap-4') \
                 .style('min-height: 0'):
@@ -54,6 +56,8 @@ def knowledge_chat_page():
                         if not text:
                             return
 
+                        chat_history.append({'role': 'user', 'content': text})
+
                         with messages:
                             ui.chat_message(text, name='Voce', sent=True)
                         msg_input.value = ''
@@ -70,13 +74,21 @@ def knowledge_chat_page():
                         send_btn.props('disable')
 
                         try:
-                            result = await run.io_bound(rag_service.query, text)
+                            result = await run.io_bound(
+                                tool_service.chat_with_tools, chat_history,
+                            )
                         except Exception as e:
                             result = {
                                 'answer': f'Erro inesperado ao consultar a base de conhecimento: {e}',
                                 'sources': [],
                                 'llm_available': False,
+                                'tool_used': False,
                             }
+
+                        chat_history.append({
+                            'role': 'assistant',
+                            'content': result['answer'],
+                        })
 
                         messages.remove(loading_msg)
                         with messages:

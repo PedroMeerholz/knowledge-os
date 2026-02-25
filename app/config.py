@@ -26,6 +26,9 @@ OLLAMA_TIMEOUT: float = float(os.environ.get('OLLAMA_TIMEOUT', '120'))
 EMBEDDING_MODEL_NAME: str = os.environ.get('EMBEDDING_MODEL_NAME', 'all-MiniLM-L6-v2')
 RAG_TOP_K: int = int(os.environ.get('RAG_TOP_K', '5'))
 
+# --- Tool calling settings ---
+TOOL_CALLING_MAX_ROUNDS: int = int(os.environ.get('TOOL_CALLING_MAX_ROUNDS', '5'))
+
 # --- NiceGUI settings ---
 APP_TITLE = 'Knowledge OS'
 APP_HOST = '0.0.0.0'

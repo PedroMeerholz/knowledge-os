@@ -19,6 +19,9 @@ TYPE_ICONS = {
     'outro': 'lightbulb',
 }
 
+BOT_NAME = 'Gandalf-RAG'
+BOT_AVATAR = '/static/gandalf-avatar.png'
+
 
 # ---------------------------------------------------------------------------
 # Pagina principal
@@ -135,7 +138,9 @@ def knowledge_chat_page():
 
                         messages.remove(loading_msg)
                         with messages:
-                            with ui.chat_message(name='KnowledgeBot'):
+                            with ui.chat_message(
+                                name=BOT_NAME, avatar=BOT_AVATAR,
+                            ):
                                 ui.markdown(result['answer'])
                             if result['sources']:
                                 response_sources = list(result['sources'])
@@ -240,16 +245,19 @@ def knowledge_chat_page():
         messages.clear()
         with messages:
             ui.chat_message(
-                "Ola! Eu sou o assistente do Knowledge OS. "
+                "Ola! Eu sou o Gandalf-RAG, assistente do Knowledge OS. "
                 "Me pergunte qualquer coisa sobre suas notas.",
-                name='KnowledgeBot',
+                name=BOT_NAME,
+                avatar=BOT_AVATAR,
                 stamp='agora',
             )
             for msg in chat_history:
                 if msg['role'] == 'user':
                     ui.chat_message(msg['content'], name='Voce', sent=True)
                 elif msg['role'] == 'assistant':
-                    with ui.chat_message(name='KnowledgeBot'):
+                    with ui.chat_message(
+                        name=BOT_NAME, avatar=BOT_AVATAR,
+                    ):
                         ui.markdown(msg['content'])
                     sources = msg.get('sources', [])
                     if sources:

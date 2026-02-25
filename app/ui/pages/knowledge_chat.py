@@ -93,6 +93,13 @@ def knowledge_chat_page():
                         messages.remove(loading_msg)
                         with messages:
                             ui.chat_message(result['answer'], name='KnowledgeBot')
+                            if result['sources']:
+                                response_sources = list(result['sources'])
+                                def _show_sources(sources=response_sources):
+                                    _open_sources_dialog(sources)
+                                ui.button('Ver Fontes', icon='source',
+                                          on_click=_show_sources) \
+                                    .props('flat dense size=sm color=primary')
                         scroll.scroll_to(percent=1.0)
 
                         msg_input.props(remove='disable')
@@ -140,6 +147,25 @@ def knowledge_chat_page():
             else:
                 ui.label('Nenhuma fonte relacionada encontrada.') \
                     .classes('text-caption text-grey-6 q-pa-md text-center w-full')
+
+
+def _open_sources_dialog(sources: list[dict]):
+    """Abre um dialog popup minimalista exibindo as fontes usadas na resposta."""
+    with ui.dialog() as dialog, ui.card().classes('q-pa-md').style('min-width: 320px'):
+        ui.label('Fontes').classes('text-subtitle1 text-weight-medium q-mb-sm')
+        ui.separator()
+        for src in sources:
+            with ui.row().classes('items-center gap-2 q-py-xs'):
+                icon = TYPE_ICONS.get(src.get('source_type', ''), 'lightbulb')
+                ui.icon(icon, color='grey-7').classes('text-sm')
+                title = src.get('title', 'Sem titulo')
+                source_name = src.get('source_name', '')
+                label = f'{title} — {source_name}' if source_name else title
+                ui.label(label).classes('text-body2 text-grey-9')
+        ui.separator().classes('q-mt-xs')
+        with ui.row().classes('w-full justify-end q-mt-sm'):
+            ui.button('Fechar', on_click=dialog.close).props('flat dense size=sm')
+    dialog.open()
 
 
 def _render_sources(sources: list[dict]):

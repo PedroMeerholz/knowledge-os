@@ -135,9 +135,8 @@ def knowledge_chat_page():
 
                         messages.remove(loading_msg)
                         with messages:
-                            ui.chat_message(
-                                result['answer'], name='KnowledgeBot',
-                            )
+                            with ui.chat_message(name='KnowledgeBot'):
+                                ui.markdown(result['answer'])
                             if result['sources']:
                                 response_sources = list(result['sources'])
 
@@ -250,7 +249,8 @@ def knowledge_chat_page():
                 if msg['role'] == 'user':
                     ui.chat_message(msg['content'], name='Voce', sent=True)
                 elif msg['role'] == 'assistant':
-                    ui.chat_message(msg['content'], name='KnowledgeBot')
+                    with ui.chat_message(name='KnowledgeBot'):
+                        ui.markdown(msg['content'])
                     sources = msg.get('sources', [])
                     if sources:
                         def _show(s=list(sources)):

@@ -22,28 +22,9 @@ from app.config import (
     OLLAMA_TIMEOUT,
 )
 from app.services.ollama_service import is_available
+from prompts.rag_prompt import RAG_PROMPT_TEMPLATE
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Prompt RAG
-# ---------------------------------------------------------------------------
-RAG_PROMPT_TEMPLATE = """
-    Você é o assistente do Knowledge OS, um sistema pessoal de gestão do conhecimento.
-    Use SOMENTE as notas fornecidas abaixo para responder a pergunta do usuário.
-    Se as notas não contiverem informacao suficiente, diga isso claramente.
-    Responda em português brasileiro.
-
-    <notas-relevantes>
-        {context}
-    </notas-relevantes>
-
-    <pergunta>
-        {question}
-    </pergunta>
-
-    Resposta:
-"""
 
 # ---------------------------------------------------------------------------
 # Estado do modulo (inicializacao lazy)

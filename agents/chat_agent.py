@@ -13,9 +13,7 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
 )
-from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
 
 from app.config import (
     OPENAI_API_KEY,
@@ -23,31 +21,16 @@ from app.config import (
     OPENAI_TIMEOUT,
     TOOL_CALLING_MAX_ROUNDS,
 )
-from app.services import rag_service
-from app.storage import load_tags
 from prompts.tool_prompt import TOOL_SYSTEM_PROMPT
 from agents.logging_callback import AgentLoggingCallback
+from tools.search_knowledge import create_search_knowledge_tool
 
 logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Input schema da ferramenta
-# ---------------------------------------------------------------------------
-class SearchKnowledgeInput(BaseModel):
-    tag: str = Field(description='A tag para filtrar as notas.')
-    question: str = Field(description='A pergunta do usuário para buscar nas notas.')
-
-
-# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def _get_available_tag_names() -> list[str]:
-    """Retorna a lista de nomes de tags registradas no sistema."""
-    tags = load_tags()
-    return [t['name'] for t in tags]
-
-
 def _to_langchain_messages(messages: list[dict]) -> list:
     """Converte dicts {role, content} em objetos de mensagem LangChain."""
     lc_messages: list = [SystemMessage(content=TOOL_SYSTEM_PROMPT)]
@@ -82,39 +65,7 @@ def chat_with_tools(messages: list[dict], interaction_id: str | None = None) -> 
     # Coletor de fontes via closure
     all_sources: list[dict] = []
 
-    def _search_knowledge_fn(tag: str, question: str) -> str:
-        """Busca notas na base de conhecimento filtradas por tag."""
-        available_tags = _get_available_tag_names()
-        if tag not in available_tags:
-            return (
-                f'Erro: A tag "{tag}" não existe no sistema. '
-                f'Tags disponíveis: {", ".join(available_tags)}'
-            )
-        result = rag_service.retrieve(question=question, tags=[tag])
-        if not result['sources']:
-            return (
-                f'Nenhuma nota encontrada com a tag "{tag}" '
-                f'relevante para a pergunta.'
-            )
-        all_sources.extend(result['sources'])
-        return result['context']
-
-    # Construir ferramenta com descricao dinamica (tags atuais)
-    available_tags = _get_available_tag_names()
-    tags_description = (
-        ', '.join(available_tags) if available_tags
-        else '(nenhuma tag cadastrada)'
-    )
-    search_tool = StructuredTool.from_function(
-        func=_search_knowledge_fn,
-        name='search_knowledge',
-        description=(
-            'Busca notas na base de conhecimento do usuario filtradas '
-            'por uma tag específica. '
-            f'Tags disponiveis: {tags_description}'
-        ),
-        args_schema=SearchKnowledgeInput,
-    )
+    search_tool = create_search_knowledge_tool(all_sources)
 
     tools = [search_tool]
     tools_by_name = {t.name: t for t in tools}

@@ -30,18 +30,29 @@ BOT_AVATAR = '/static/gandalf-avatar.png'
 def knowledge_chat_page():
     create_sidebar()
 
+    # Prevent page-level scroll — everything must fit in viewport
+    ui.query('.q-page').style(
+        'height: calc(100vh - var(--q-header-offset, 75px)); '
+        'min-height: 0; overflow: hidden'
+    )
+    ui.query('.nicegui-content').style(
+        'height: 100%; overflow: hidden'
+    )
+
     current_chat_id = None
     chat_history = []
 
-    with ui.column().classes('w-full p-4').style('height: calc(100vh - 4rem)'):
-        ui.label('Assistente Virtual').classes('text-h4 q-mb-md')
+    with ui.column().classes('w-full p-4 no-wrap') \
+            .style('height: 100%; overflow: hidden'):
+        ui.label('Assistente Virtual').classes('text-h4 q-mb-md') \
+            .style('flex-shrink: 0')
 
         with ui.row().classes('w-full flex-grow gap-4') \
-                .style('min-height: 0'):
+                .style('min-height: 0; overflow: hidden'):
 
             # ---- LEFT: Chat Sidebar ----
-            with ui.column().classes('min-w-0 border-r q-pr-sm flex-[3]') \
-                    .style('min-height: 0'):
+            with ui.column().classes('min-w-0 border-r q-pr-sm flex-[3] no-wrap') \
+                    .style('min-height: 0; height: 100%; overflow: hidden'):
 
                 with ui.row().classes('w-full items-center q-pa-sm'):
                     ui.label('Conversas') \
@@ -62,8 +73,8 @@ def knowledge_chat_page():
                     sidebar_list = ui.column().classes('w-full gap-1 q-pa-xs')
 
             # ---- CENTER: Chat ----
-            with ui.column().classes('min-w-0 flex-[7]') \
-                    .style('min-height: 0'):
+            with ui.column().classes('min-w-0 flex-[7] no-wrap') \
+                    .style('min-height: 0; height: 100%; overflow: hidden'):
                 with ui.scroll_area() \
                         .classes('flex-grow w-full border rounded-lg '
                                  'bg-grey-1') as scroll:

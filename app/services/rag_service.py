@@ -1,7 +1,7 @@
 """
 rag_service.py
 RAG (Retrieval-Augmented Generation) service para o Knowledge OS.
-Usa LangChain com FAISS para armazenamento vetorial e Ollama para geracao.
+Usa LangChain com FAISS para armazenamento vetorial e OpenAI para geracao.
 """
 
 import logging
@@ -9,19 +9,19 @@ from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+from langchain_openai import ChatOpenAI
 
 from app.config import (
     FAISS_INDEX_DIR,
     EMBEDDING_MODEL_NAME,
     RAG_TOP_K,
-    OLLAMA_BASE_URL,
-    OLLAMA_MODEL,
-    OLLAMA_TIMEOUT,
+    OPENAI_API_KEY,
+    CHAT_MODEL,
+    OPENAI_TIMEOUT,
 )
-from app.services.ollama_service import is_available
 from prompts.rag_prompt import RAG_PROMPT_TEMPLATE
 
 logger = logging.getLogger(__name__)
@@ -290,30 +290,17 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
             'llm_available': False,
         }
 
-    llm_available = is_available()
-    if not llm_available:
-        answer = (
-            'O modelo de IA (Ollama) não esta disponivel no momento. '
-            'Aqui estao as notas mais relevantes encontradas:'
-        )
-        answer += '\n\n' + context
-        return {
-            'answer': answer,
-            'sources': sources,
-            'llm_available': False,
-        }
-
     try:
-        llm = OllamaLLM(
-            base_url=OLLAMA_BASE_URL,
-            model=OLLAMA_MODEL,
-            timeout=OLLAMA_TIMEOUT,
+        llm = ChatOpenAI(
+            api_key=OPENAI_API_KEY,
+            model=CHAT_MODEL,
+            timeout=OPENAI_TIMEOUT,
         )
         prompt = PromptTemplate(
             input_variables=['context', 'question'],
             template=RAG_PROMPT_TEMPLATE,
         )
-        chain = prompt | llm
+        chain = prompt | llm | StrOutputParser()
         answer = chain.invoke({'context': context, 'question': question})
     except Exception as e:
         logger.error('Falha na geracao com LLM: %s', e)

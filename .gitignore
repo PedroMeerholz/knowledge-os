@@ -25,3 +25,9 @@ Thumbs.db
 
 # Claude temp files
 tmpclaude-*
+
+# Model action logs
+logs/*.log
+
+# env file
+.env

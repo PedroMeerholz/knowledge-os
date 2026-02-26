@@ -2,7 +2,7 @@
 chat_agent.py
 Agente de chat que orquestra o loop de tool calling (function calling) do LLM
 no Knowledge OS. Usa LangChain para definir a ferramenta 'search_knowledge'
-e gerenciar o loop de tool calling entre o modelo Ollama e o sistema RAG.
+e gerenciar o loop de tool calling entre o modelo OpenAI e o sistema RAG.
 """
 
 import logging
@@ -14,16 +14,16 @@ from langchain_core.messages import (
     ToolMessage,
 )
 from langchain_core.tools import StructuredTool
-from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 from app.config import (
-    OLLAMA_BASE_URL,
-    OLLAMA_MODEL,
-    OLLAMA_TIMEOUT,
+    OPENAI_API_KEY,
+    CHAT_MODEL,
+    OPENAI_TIMEOUT,
     TOOL_CALLING_MAX_ROUNDS,
 )
-from app.services import ollama_service, rag_service
+from app.services import rag_service
 from app.storage import load_tags
 from prompts.tool_prompt import TOOL_SYSTEM_PROMPT
 from agents.logging_callback import AgentLoggingCallback
@@ -76,17 +76,9 @@ def chat_with_tools(messages: list[dict], interaction_id: str | None = None) -> 
         dict com:
             'answer': str - A resposta final do modelo.
             'sources': list[dict] - Fontes das notas encontradas.
-            'llm_available': bool - Se o Ollama participou da geracao.
+            'llm_available': bool - Se o modelo participou da geracao.
             'tool_used': bool - Se a ferramenta search_knowledge foi invocada.
     """
-    if not ollama_service.is_available():
-        return {
-            'answer': 'O modelo de IA (Ollama) não está disponível no momento.',
-            'sources': [],
-            'llm_available': False,
-            'tool_used': False,
-        }
-
     # Coletor de fontes via closure
     all_sources: list[dict] = []
 
@@ -128,10 +120,10 @@ def chat_with_tools(messages: list[dict], interaction_id: str | None = None) -> 
     tools_by_name = {t.name: t for t in tools}
 
     # Criar modelo com ferramentas vinculadas
-    llm = ChatOllama(
-        base_url=OLLAMA_BASE_URL,
-        model=OLLAMA_MODEL,
-        timeout=OLLAMA_TIMEOUT,
+    llm = ChatOpenAI(
+        api_key=OPENAI_API_KEY,
+        model=CHAT_MODEL,
+        timeout=OPENAI_TIMEOUT,
     ).bind_tools(tools)
 
     lc_messages = _to_langchain_messages(messages)
@@ -146,7 +138,7 @@ def chat_with_tools(messages: list[dict], interaction_id: str | None = None) -> 
         try:
             response: AIMessage = llm.invoke(lc_messages, config=invoke_config)
         except Exception as e:
-            logger.error('Erro na chamada ao Ollama (round %d): %s', round_num, e)
+            logger.error('Erro na chamada ao OpenAI (round %d): %s', round_num, e)
             return {
                 'answer': f'Erro ao comunicar com o modelo de IA: {e}',
                 'sources': all_sources,

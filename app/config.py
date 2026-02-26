@@ -3,7 +3,10 @@ Centralized configuration for the Knowledge OS application.
 All paths resolve relative to the project root (one level above this file).
 """
 import os
+from dotenv import load_dotenv
 from pathlib import Path
+
+load_dotenv()
 
 # Project root: the directory containing main.py and data/
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -19,10 +22,11 @@ FAISS_INDEX_DIR: str = os.environ.get(
     str(DATA_DIR / 'faiss_index'),
 )
 
-# --- Ollama settings ---
-OLLAMA_BASE_URL: str = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
-OLLAMA_MODEL: str = os.environ.get('OLLAMA_MODEL', 'ministral-3:3b')
-OLLAMA_TIMEOUT: float = float(os.environ.get('OLLAMA_TIMEOUT', '120'))
+# --- OpenAI settings ---
+OPENAI_API_KEY: str = os.environ.get('OPENAI_API_KEY', '')
+CHAT_MODEL: str = os.environ.get('CHAT_MODEL', 'gpt-4o')
+GUARDRAIL_MODEL: str = os.environ.get('GUARDRAIL_MODEL', 'gpt-4o-mini')
+OPENAI_TIMEOUT: float = float(os.environ.get('OPENAI_TIMEOUT', '120'))
 
 # --- RAG settings ---
 EMBEDDING_MODEL_NAME: str = os.environ.get('EMBEDDING_MODEL_NAME', 'all-MiniLM-L6-v2')

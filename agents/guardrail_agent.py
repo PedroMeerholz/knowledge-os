@@ -2,18 +2,19 @@
 guardrail_agent.py
 Agente de guardrail que verifica se a resposta do LLM e coerente
 com a pergunta do usuario e se nao contem conteudo perigoso ou sensivel.
-Usa LangChain LCEL com OllamaLLM.
+Usa LangChain LCEL com ChatOpenAI.
 """
 
 import logging
 
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_ollama import OllamaLLM
+from langchain_openai import ChatOpenAI
 
 from app.config import (
-    OLLAMA_BASE_URL,
-    OLLAMA_MODEL,
-    OLLAMA_TIMEOUT,
+    OPENAI_API_KEY,
+    GUARDRAIL_MODEL,
+    OPENAI_TIMEOUT,
 )
 from prompts.guardrail_prompt import GUARDRAIL_PROMPT_TEMPLATE
 from agents.logging_callback import AgentLoggingCallback
@@ -40,16 +41,16 @@ def check_coherence(
         Retorna True (skip guardrail) em caso de erro na avaliacao.
     """
     try:
-        llm = OllamaLLM(
-            base_url=OLLAMA_BASE_URL,
-            model=OLLAMA_MODEL,
-            timeout=OLLAMA_TIMEOUT,
+        llm = ChatOpenAI(
+            api_key=OPENAI_API_KEY,
+            model=GUARDRAIL_MODEL,
+            timeout=OPENAI_TIMEOUT,
         )
         prompt = PromptTemplate(
             input_variables=['question', 'answer'],
             template=GUARDRAIL_PROMPT_TEMPLATE,
         )
-        chain = prompt | llm
+        chain = prompt | llm | StrOutputParser()
 
         invoke_config = {}
         if interaction_id:

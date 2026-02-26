@@ -82,7 +82,7 @@ def knowledge_chat_page():
                 with ui.scroll_area() \
                         .classes('flex-grow w-full border rounded-lg '
                                  'bg-grey-1') as scroll:
-                    messages = ui.column().classes('w-full q-pa-md gap-2')
+                    messages = ui.column().classes('w-full q-pa-md gap-2 items-stretch')
 
                 with ui.row().classes('w-full gap-2 q-mt-sm items-center'):
                     msg_input = ui.input(

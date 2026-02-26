@@ -38,13 +38,13 @@ class AgentLoggingCallback(BaseCallbackHandler):
 
     def on_llm_start(
         self,
-        serialized: dict[str, Any],
+        serialized: dict[str, Any] | None,
         prompts: list[str],
         *,
         run_id: UUID,
         **kwargs: Any,
     ) -> None:
-        model = serialized.get('kwargs', {}).get('model', 'unknown')
+        model = (serialized or {}).get('kwargs', {}).get('model', 'unknown')
         prompt_preview = (prompts[0][:100] + '...') if prompts else ''
         self._log('llm_start', f'model={model} | prompt={prompt_preview}')
 
@@ -73,19 +73,20 @@ class AgentLoggingCallback(BaseCallbackHandler):
 
     def on_chain_start(
         self,
-        serialized: dict[str, Any],
+        serialized: dict[str, Any] | None,
         inputs: dict[str, Any],
         *,
         run_id: UUID,
         **kwargs: Any,
     ) -> None:
+        serialized = serialized or {}
         chain_name = serialized.get('name', serialized.get('id', ['unknown'])[-1])
         input_preview = str(inputs)[:150]
         self._log('chain_start', f'chain={chain_name} | input={input_preview}')
 
     def on_chain_end(
         self,
-        outputs: dict[str, Any],
+        outputs: dict[str, Any] | None,
         *,
         run_id: UUID,
         **kwargs: Any,

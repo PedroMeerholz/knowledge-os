@@ -4,8 +4,8 @@ import uuid
 from nicegui import run, ui
 
 from agents.guardrail_agent import check_coherence
+from agents import chat_agent
 from app.config import GUARDRAIL_MAX_RETRIES, MAX_CHATS
-from tool import tool_service
 from app.storage import (
     count_chats, delete_chat, get_chat, load_chats, save_chat, update_chat,
 )
@@ -139,7 +139,7 @@ def knowledge_chat_page():
                         for attempt in range(1 + GUARDRAIL_MAX_RETRIES):
                             try:
                                 result = await run.io_bound(
-                                    tool_service.chat_with_tools,
+                                    chat_agent.chat_with_tools,
                                     chat_history,
                                     interaction_id,
                                 )

@@ -1,8 +1,8 @@
 """
-tool_service.py
-Camada de orquestracao para tool calling (function calling) do LLM no Knowledge OS.
-Usa LangChain para definir a ferramenta 'search_knowledge' e gerenciar o loop
-de tool calling entre o modelo Ollama e o sistema RAG.
+chat_agent.py
+Agente de chat que orquestra o loop de tool calling (function calling) do LLM
+no Knowledge OS. Usa LangChain para definir a ferramenta 'search_knowledge'
+e gerenciar o loop de tool calling entre o modelo Ollama e o sistema RAG.
 """
 
 import logging

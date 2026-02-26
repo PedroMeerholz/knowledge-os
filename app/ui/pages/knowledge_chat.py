@@ -19,7 +19,7 @@ TYPE_ICONS = {
     'outro': 'lightbulb',
 }
 
-BOT_NAME = 'Gandalf-RAG'
+BOT_NAME = 'Gandalf'
 BOT_AVATAR = '/static/gandalf-avatar.png'
 
 
@@ -256,11 +256,10 @@ def knowledge_chat_page():
         messages.clear()
         with messages:
             ui.chat_message(
-                "Ola! Eu sou o Gandalf-RAG, assistente do Knowledge OS. "
+                "Ola! Eu sou o Gandalf, assistente do Knowledge OS. "
                 "Me pergunte qualquer coisa sobre suas notas.",
                 name=BOT_NAME,
                 avatar=BOT_AVATAR,
-                stamp='agora',
             )
             for msg in chat_history:
                 if msg['role'] == 'user':

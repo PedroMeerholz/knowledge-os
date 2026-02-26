@@ -13,7 +13,7 @@ def notes_page():
         ui.label('Banco de Notas').classes('text-h4 q-mb-md')
 
         with ui.row().classes('w-full gap-4 q-mb-md items-end'):
-            search_input = ui.input('Buscar', placeholder='Buscar por titulo, conteudo ou tags') \
+            search_input = ui.input('Buscar', placeholder='Buscar por título, conteúdo ou tags') \
                 .classes('flex-grow').props('outlined clearable dense')
             filter_select = ui.select(
                 ['Todos'] + SOURCE_TYPES,
@@ -32,7 +32,7 @@ def notes_page():
                 edit_title = ui.input('Titulo', value=note['title']) \
                     .classes('w-full').props('outlined')
 
-                edit_content = ui.textarea('Conteudo', value=note.get('content', '')) \
+                edit_content = ui.textarea('Conteúdo', value=note.get('content', '')) \
                     .classes('w-full').props('outlined autogrow input-style="min-height: 150px"')
 
                 edit_source_type = ui.select(
@@ -97,15 +97,15 @@ def notes_page():
 
                 ui.separator().classes('q-my-sm')
 
-                # --- Botoes de acao ---
+                # --- Botoes de ação ---
                 with ui.row().classes('w-full justify-end gap-2 q-mt-md'):
                     ui.button('Cancelar', on_click=dialog.close).props('flat')
                     def handle_save():
                         if not edit_title.value or not edit_title.value.strip():
-                            ui.notify('O titulo e obrigatorio', type='warning')
+                            ui.notify('O título e obrigatório', type='warning')
                             return
                         if not edit_content.value or not edit_content.value.strip():
-                            ui.notify('O conteudo e obrigatorio', type='warning')
+                            ui.notify('O conteúdo e obrigatório', type='warning')
                             return
                         update_note(
                             note_id=note['id'],
@@ -182,7 +182,7 @@ def notes_page():
                                 def do_delete():
                                     with ui.dialog() as dlg, ui.card():
                                         ui.label('Excluir esta nota?').classes('text-h6')
-                                        ui.label('Esta acao nao pode ser desfeita.')
+                                        ui.label('Esta ação não pode ser desfeita.')
                                         with ui.row().classes('q-mt-md gap-2'):
                                             ui.button('Cancelar', on_click=dlg.close).props('flat')
                                             ui.button('Excluir', color='negative',

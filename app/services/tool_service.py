@@ -31,16 +31,15 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # System prompt para o chat com tool calling
 # ---------------------------------------------------------------------------
-TOOL_SYSTEM_PROMPT = (
-    "Voce e o assistente do Knowledge OS, um sistema pessoal de gestao do conhecimento. "
-    "Voce tem acesso a uma ferramenta chamada 'search_knowledge' que busca notas na "
-    "base de conhecimento do usuario filtradas por tag. "
-    "Quando o usuario fizer uma pergunta sobre um tema especifico, use a ferramenta "
-    "para buscar notas relevantes antes de responder. "
-    "O parametro 'tag' deve ser uma das tags registradas no sistema. "
-    "Responda sempre em portugues brasileiro. "
-    "Se a ferramenta nao retornar resultados relevantes, informe o usuario claramente."
-)
+TOOL_SYSTEM_PROMPT = """
+    Você é o assistente do Knowledge OS, um sistema pessoal de gestão do conhecimento.
+    Você possui acesso as seguintes ferramentas:
+    <ferramentas>
+        search_knowledge: Busca notas na base de conhecimento do usuário filtradas por tag. Utilize quando o usuário fizer uma pergunta sobre um tema específico.
+    </ferramentas>
+    Se a ferramenta utilizada não retornar resultados relevantes, informe o usuário claramente.
+    Responda sempre em português brasileiro.
+"""
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +47,7 @@ TOOL_SYSTEM_PROMPT = (
 # ---------------------------------------------------------------------------
 class SearchKnowledgeInput(BaseModel):
     tag: str = Field(description='A tag para filtrar as notas.')
-    question: str = Field(description='A pergunta do usuario para buscar nas notas.')
+    question: str = Field(description='A pergunta do usuário para buscar nas notas.')
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +91,7 @@ def chat_with_tools(messages: list[dict]) -> dict:
     """
     if not ollama_service.is_available():
         return {
-            'answer': 'O modelo de IA (Ollama) nao esta disponivel no momento.',
+            'answer': 'O modelo de IA (Ollama) não está disponível no momento.',
             'sources': [],
             'llm_available': False,
             'tool_used': False,
@@ -106,8 +105,8 @@ def chat_with_tools(messages: list[dict]) -> dict:
         available_tags = _get_available_tag_names()
         if tag not in available_tags:
             return (
-                f'Erro: A tag "{tag}" nao existe no sistema. '
-                f'Tags disponiveis: {", ".join(available_tags)}'
+                f'Erro: A tag "{tag}" não existe no sistema. '
+                f'Tags disponíveis: {", ".join(available_tags)}'
             )
         result = rag_service.retrieve(question=question, tags=[tag])
         if not result['sources']:
@@ -129,7 +128,7 @@ def chat_with_tools(messages: list[dict]) -> dict:
         name='search_knowledge',
         description=(
             'Busca notas na base de conhecimento do usuario filtradas '
-            'por uma tag especifica. '
+            'por uma tag específica. '
             f'Tags disponiveis: {tags_description}'
         ),
         args_schema=SearchKnowledgeInput,
@@ -200,8 +199,8 @@ def chat_with_tools(messages: list[dict]) -> dict:
     )
     return {
         'answer': (
-            'Desculpe, nao consegui processar completamente sua pergunta. '
-            'Tente reformula-la.'
+            'Desculpe, não consegui processar completamente sua pergunta. '
+            'Tente reformulá-la.'
         ),
         'sources': all_sources,
         'llm_available': True,

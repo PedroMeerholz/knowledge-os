@@ -28,18 +28,22 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Prompt RAG
 # ---------------------------------------------------------------------------
-RAG_PROMPT_TEMPLATE = """Voce e o assistente do Knowledge OS, um sistema pessoal de gestao do conhecimento.
-Use SOMENTE as notas fornecidas abaixo para responder a pergunta do usuario.
-Se as notas nao contiverem informacao suficiente, diga isso claramente.
-Responda em portugues brasileiro.
+RAG_PROMPT_TEMPLATE = """
+    Você é o assistente do Knowledge OS, um sistema pessoal de gestão do conhecimento.
+    Use SOMENTE as notas fornecidas abaixo para responder a pergunta do usuário.
+    Se as notas não contiverem informacao suficiente, diga isso claramente.
+    Responda em português brasileiro.
 
---- NOTAS RELEVANTES ---
-{context}
---- FIM DAS NOTAS ---
+    <notas-relevantes>
+        {context}
+    </notas-relevantes>
 
-Pergunta: {question}
+    <pergunta>
+        {question}
+    </pergunta>
 
-Resposta:"""
+    Resposta:
+"""
 
 # ---------------------------------------------------------------------------
 # Estado do modulo (inicializacao lazy)
@@ -65,7 +69,7 @@ def _get_embeddings():
         except Exception as e:
             logger.error('Falha ao carregar modelo de embeddings: %s', e)
             raise RuntimeError(
-                f'Nao foi possivel carregar o modelo "{EMBEDDING_MODEL_NAME}". '
+                f'não foi possivel carregar o modelo "{EMBEDDING_MODEL_NAME}". '
                 f'Verifique se sentence-transformers esta instalado. Erro: {e}'
             ) from e
     return _embeddings
@@ -83,9 +87,9 @@ def _get_vectorstore():
                 embeddings,
                 allow_dangerous_deserialization=True,
             )
-            logger.info('Indice FAISS carregado de %s', FAISS_INDEX_DIR)
+            logger.info('índice FAISS carregado de %s', FAISS_INDEX_DIR)
         else:
-            logger.info('Nenhum indice FAISS encontrado, sera criado no primeiro uso')
+            logger.info('Nenhum índice FAISS encontrado, sera criado no primeiro uso')
     return _vectorstore
 
 
@@ -94,7 +98,7 @@ def _save_vectorstore():
     if _vectorstore is not None:
         Path(FAISS_INDEX_DIR).parent.mkdir(parents=True, exist_ok=True)
         _vectorstore.save_local(FAISS_INDEX_DIR)
-        logger.info('Indice FAISS salvo em %s', FAISS_INDEX_DIR)
+        logger.info('índice FAISS salvo em %s', FAISS_INDEX_DIR)
 
 
 def _build_document(note: dict) -> Document:
@@ -114,11 +118,11 @@ def _build_document(note: dict) -> Document:
 
 
 def _rebuild_index(notes: list[dict]) -> None:
-    """Reconstroi o indice FAISS do zero a partir de uma lista de notas."""
+    """Reconstroi o índice FAISS do zero a partir de uma lista de notas."""
     global _vectorstore
     if not notes:
         _vectorstore = None
-        # Limpar arquivos do indice se existirem
+        # Limpar arquivos do índice se existirem
         index_path = Path(FAISS_INDEX_DIR)
         for f in ('index.faiss', 'index.pkl'):
             fpath = index_path / f
@@ -134,13 +138,13 @@ def _rebuild_index(notes: list[dict]) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Gerenciamento do indice
+# Gerenciamento do índice
 # ---------------------------------------------------------------------------
 def ensure_index() -> int:
     """
     Reconcilia o vector store com as notas atuais no storage.
-    Reconstroi o indice completo para garantir consistencia.
-    Retorna o numero de documentos no indice.
+    Reconstroi o índice completo para garantir consistencia.
+    Retorna o numero de documentos no índice.
     """
     global _initialized
     from app.storage import load_notes
@@ -148,7 +152,7 @@ def ensure_index() -> int:
     notes = load_notes()
     _rebuild_index(notes)
     _initialized = True
-    logger.info('Indice FAISS reconciliado com %d notas', len(notes))
+    logger.info('índice FAISS reconciliado com %d notas', len(notes))
     return len(notes)
 
 
@@ -169,23 +173,23 @@ def add_note(note: dict) -> None:
 
 
 def update_note(note_id: str, note: dict) -> None:
-    """Atualiza uma nota no vector store (reconstroi o indice)."""
+    """Atualiza uma nota no vector store (reconstroi o índice)."""
     try:
         from app.storage import load_notes
         notes = load_notes()
         _rebuild_index(notes)
-        logger.info('Nota %s atualizada no vector store (indice reconstruido)', note_id)
+        logger.info('Nota %s atualizada no vector store (índice reconstruido)', note_id)
     except Exception as e:
         logger.error('Falha ao atualizar nota no vector store: %s', e)
 
 
 def delete_note(note_id: str) -> None:
-    """Remove uma nota do vector store (reconstroi o indice)."""
+    """Remove uma nota do vector store (reconstroi o índice)."""
     try:
         from app.storage import load_notes
         notes = load_notes()
         _rebuild_index(notes)
-        logger.info('Nota %s removida do vector store (indice reconstruido)', note_id)
+        logger.info('Nota %s removida do vector store (índice reconstruido)', note_id)
     except Exception as e:
         logger.error('Falha ao remover nota do vector store: %s', e)
 
@@ -199,7 +203,7 @@ def retrieve(question: str, source_type: str = '', tags: list[str] | None = None
     Recupera notas relevantes da base de conhecimento sem chamar o LLM.
 
     Args:
-        question: A pergunta do usuario para busca semantica.
+        question: A pergunta do usuário para busca semantica.
         source_type: Filtro opcional por tipo de fonte (ex: 'livro', 'video').
         tags: Filtro opcional por tags (notas que contenham QUALQUER uma das tags).
         top_k: Numero de documentos a recuperar.
@@ -279,7 +283,7 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
     Consulta a base de conhecimento usando RAG.
 
     Args:
-        question: A pergunta do usuario.
+        question: A pergunta do usuário.
         source_type: Filtro opcional por tipo de fonte (ex: 'livro', 'video').
         tags: Filtro opcional por tags (notas que contenham QUALQUER uma das tags).
         top_k: Numero de documentos a recuperar.
@@ -308,7 +312,7 @@ def query(question: str, source_type: str = '', tags: list[str] | None = None,
     llm_available = is_available()
     if not llm_available:
         answer = (
-            'O modelo de IA (Ollama) nao esta disponivel no momento. '
+            'O modelo de IA (Ollama) não esta disponivel no momento. '
             'Aqui estao as notas mais relevantes encontradas:'
         )
         answer += '\n\n' + context

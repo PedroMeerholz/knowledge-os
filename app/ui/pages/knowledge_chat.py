@@ -184,7 +184,7 @@ def knowledge_chat_page():
                             else:
                                 ui.notify(
                                     f'Limite de {MAX_CHATS} conversas '
-                                    'atingido. Conversa nao foi salva.',
+                                    'atingido. Conversa não foi salva.',
                                     type='warning',
                                 )
                         else:
@@ -298,7 +298,7 @@ def knowledge_chat_page():
         nonlocal current_chat_id
         chat = get_chat(chat_id)
         if chat is None:
-            ui.notify('Conversa nao encontrada.', type='negative')
+            ui.notify('Conversa não encontrada.', type='negative')
             return
         current_chat_id = chat['id']
         chat_history.clear()
@@ -311,7 +311,7 @@ def knowledge_chat_page():
 
         with ui.dialog() as dlg, ui.card():
             ui.label(f'Excluir "{chat_title}"?').classes('text-h6')
-            ui.label('Esta acao nao pode ser desfeita.')
+            ui.label('Esta ação não pode ser desfeita.')
             with ui.row().classes('q-mt-md gap-2'):
                 ui.button('Cancelar', on_click=dlg.close).props('flat')
 

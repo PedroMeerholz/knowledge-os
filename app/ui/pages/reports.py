@@ -8,55 +8,55 @@ from app.storage import load_notes, load_tags
 MIN_NOTES_PER_TAG = 10
 
 # ---------------------------------------------------------------------------
-# Relatorios mockados por tag (usados quando a tag atinge o minimo de notas)
+# Relatórios mockados por tag (usados quando a tag atinge o mínimo de notas)
 # ---------------------------------------------------------------------------
 MOCK_REPORTS = {
     'leadership': {
-        'title': 'Relatorio: Lideranca',
+        'title': 'Relatório: Lideranca',
         'summary': (
-            'Com base nas suas anotacoes sobre lideranca, identificamos que voce tem '
-            'explorado principalmente os conceitos de lideranca servidora e gestao de '
-            'equipes. Suas fontes combinam livros classicos com conteudos em video, '
+            'Com base nas suas anotações sobre lideranca, identificamos que você tem '
+            'explorado principalmente os conceitos de lideranca servidora e gestão de '
+            'equipes. Suas fontes combinam livros clássicos com conteúdos em vídeo, '
             'indicando uma abordagem diversificada de aprendizado.'
         ),
         'insights': [
-            'Tema recorrente: a importancia da escuta ativa e empatia na gestao de pessoas.',
-            'Fontes mais utilizadas: livros e videos, com predominancia de autores norte-americanos.',
+            'Tema recorrente: a importância da escuta ativa e empatia na gestão de pessoas.',
+            'Fontes mais utilizadas: livros e vídeos, com predominância de autores norte-americanos.',
             'Lacuna identificada: poucas notas sobre lideranca em contextos de tecnologia e startups.',
         ],
         'suggestion': (
-            'Considere explorar conteudos sobre lideranca tecnica e gestao de equipes ageis '
+            'Considere explorar conteúdos sobre lideranca técnica e gestão de equipes ágeis '
             'para complementar sua base de conhecimento atual.'
         ),
     },
     'programacao': {
-        'title': 'Relatorio: Programacao',
+        'title': 'Relatório: Programação',
         'summary': (
-            'Suas notas sobre programacao cobrem boas praticas de codigo, arquitetura de '
-            'software e carreira em tecnologia. Ha uma concentracao em fontes do tipo video '
-            'e livro, com menor presenca de artigos tecnicos.'
+            'Suas notas sobre programação cobrem boas práticas de código, arquitetura de '
+            'software e carreira em tecnologia. Há uma concentracao em fontes do tipo vídeo '
+            'e livro, com menor presenca de artigos técnicos.'
         ),
         'insights': [
-            'Foco principal: clean code, principios SOLID e boas praticas de engenharia.',
-            'Fontes diversificadas entre livros, videos e cursos online.',
-            'Pouca cobertura de topicos como testes automatizados e DevOps.',
+            'Foco principal: clean code, principios SOLID e boas práticas de engenharia.',
+            'Fontes diversificadas entre livros, vídeos e cursos online.',
+            'Pouca cobertura de tópicos como testes automatizados e DevOps.',
         ],
         'suggestion': (
-            'Ampliar o estudo com artigos tecnicos e documentacao oficial pode trazer '
+            'Ampliar o estudo com artigos técnicos e documentacao oficial pode trazer '
             'uma perspectiva mais pratica e atualizada.'
         ),
     },
     'psicologia': {
-        'title': 'Relatorio: Psicologia',
+        'title': 'Relatório: Psicologia',
         'summary': (
             'O conjunto de notas sobre psicologia abrange comportamento humano, '
-            'neurociencia aplicada e tecnicas de aprendizado. Voce demonstra interesse '
-            'em entender como o cerebro processa informacoes e forma habitos.'
+            'neurociência aplicada e técnicas de aprendizado. Você demonstra interesse '
+            'em entender como o cérebro processa informacoes e forma hábitos.'
         ),
         'insights': [
-            'Tema central: conexao entre psicologia cognitiva e produtividade pessoal.',
-            'Boa variedade de fontes: podcasts, videos e livros academicos.',
-            'Oportunidade: explorar psicologia organizacional e dinamicas de grupo.',
+            'Tema central: conexão entre psicologia cognitiva e produtividade pessoal.',
+            'Boa variedade de fontes: podcasts, vídeos e livros acadêmicos.',
+            'Oportunidade: explorar psicologia organizacional e dinâmicas de grupo.',
         ],
         'suggestion': (
             'Aprofundar em psicologia comportamental aplicada ao trabalho pode '
@@ -65,17 +65,17 @@ MOCK_REPORTS = {
     },
 }
 
-# Relatorio generico para tags sem mock especifico
+# Relatório generico para tags sem mock especifico
 DEFAULT_MOCK_REPORT = {
     'summary': (
-        'Este relatorio foi gerado com base nas suas anotacoes sobre o tema "{tag}". '
-        'A analise identificou padroes nas fontes utilizadas, temas recorrentes e '
+        'Este relatório foi gerado com base nas suas anotações sobre o tema "{tag}". '
+        'A análise identificou padrões nas fontes utilizadas, temas recorrentes e '
         'possibilidades de aprofundamento.'
     ),
     'insights': [
         'As notas cobrem diferentes tipos de fonte, indicando aprendizado diversificado.',
         'Foram identificados subtemas que se conectam com outras areas do seu conhecimento.',
-        'Ha espaco para explorar fontes complementares como artigos e cursos especializados.',
+        'Há espaco para explorar fontes complementares como artigos e cursos especializados.',
     ],
     'suggestion': (
         'Considere revisar suas notas mais antigas sobre "{tag}" e buscar fontes '
@@ -94,11 +94,11 @@ def _count_notes_per_tag(notes: list[dict]) -> dict[str, int]:
 
 
 def _get_mock_report(tag: str) -> dict:
-    """Retorna o relatorio mockado para uma tag."""
+    """Retorna o relatório mockado para uma tag."""
     if tag in MOCK_REPORTS:
         return MOCK_REPORTS[tag]
     return {
-        'title': f'Relatorio: {tag.capitalize()}',
+        'title': f'Relatório: {tag.capitalize()}',
         'summary': DEFAULT_MOCK_REPORT['summary'].format(tag=tag),
         'insights': list(DEFAULT_MOCK_REPORT['insights']),
         'suggestion': DEFAULT_MOCK_REPORT['suggestion'].format(tag=tag),
@@ -114,7 +114,7 @@ def reports_page():
     all_tags = sorted(tag_counts.keys())
 
     with ui.column().classes('w-full max-w-4xl mx-auto p-6 gap-6'):
-        ui.label('Relatorios').classes('text-h4 q-mb-md')
+        ui.label('Relatórios').classes('text-h4 q-mb-md')
 
         # --- Banner explicativo ---
         with ui.element('div').classes(
@@ -126,11 +126,11 @@ def reports_page():
                     'text-subtitle1 font-bold text-orange-9'
                 )
                 ui.label(
-                    'Futuramente, esta pagina usara IA (LLM) para analisar suas notas '
-                    'e gerar relatorios de conhecimento automaticamente. O modelo ira ler '
-                    'o conteudo completo das suas notas agrupadas por tag, identificar '
-                    'padroes, temas recorrentes, lacunas e sugerir proximos passos de '
-                    'estudo. Por enquanto, os relatorios abaixo sao ilustrativos.'
+                    'Futuramente, esta página usara IA (LLM) para analisar suas notas '
+                    'e gerar relatórios de conhecimento automaticamente. O modelo irá ler '
+                    'o conteúdo completo das suas notas agrupadas por tag, identificar '
+                    'padrões, temas recorrentes, lacunas e sugerir próximos passos de '
+                    'estudo. Por enquanto, os relatórios abaixo são ilustrativos.'
                 ).classes('text-body2 text-orange-10')
 
         # --- Como funciona ---
@@ -139,10 +139,10 @@ def reports_page():
             ui.separator()
             with ui.column().classes('gap-2 q-mt-sm'):
                 steps = [
-                    ('looks_one', f'Cada tag precisa ter no minimo {MIN_NOTES_PER_TAG} notas para desbloquear a geracao de relatorio.'),
-                    ('looks_two', 'Ao clicar em "Gerar Relatorio", a IA analisa todas as notas daquela tag.'),
-                    ('looks_3', 'O relatorio apresenta um resumo, insights principais e sugestoes de estudo.'),
-                    ('looks_4', 'Voce pode gerar relatorios para diferentes tags e acompanhar sua evolucao.'),
+                    ('looks_one', f'Cada tag precisa ter no mínimo {MIN_NOTES_PER_TAG} notas para desbloquear a geração de relatório.'),
+                    ('looks_two', 'Ao clicar em "Gerar Relatório", a IA analisa todas as notas daquela tag.'),
+                    ('looks_3', 'O relatório apresenta um resumo, insights principais e sugestões de estudo.'),
+                    ('looks_4', 'Você pode gerar relatórios para diferentes tags e acompanhar sua evolução.'),
                 ]
                 for icon, text in steps:
                     with ui.row().classes('items-start gap-2'):
@@ -156,7 +156,7 @@ def reports_page():
 
             if not all_tags:
                 ui.label(
-                    'Nenhuma tag encontrada. Crie tags e adicione notas para desbloquear relatorios.'
+                    'Nenhuma tag encontrada. Crie tags e adicione notas para desbloquear relatórios.'
                 ).classes('text-body2 text-grey-6 italic q-mt-md')
             else:
                 with ui.column().classes('w-full gap-3 q-mt-md'):
@@ -181,33 +181,33 @@ def reports_page():
                                     def generate():
                                         _show_report_dialog(t)
                                     return generate
-                                ui.button('Gerar Relatorio', icon='description',
+                                ui.button('Gerar Relatório', icon='description',
                                           on_click=make_generate(tag)) \
                                     .props('color=primary size=sm no-caps')
                             else:
                                 ui.icon('lock', color='grey-5').classes('text-xl') \
                                     .tooltip(f'Faltam {MIN_NOTES_PER_TAG - count} notas para desbloquear')
 
-        # --- Relatorio placeholder de exemplo ---
+        # --- Relatório placeholder de exemplo ---
         with ui.card().classes('w-full q-pa-lg'):
-            ui.label('Exemplo de Relatorio').classes('text-h6 q-mb-sm')
+            ui.label('Exemplo de Relatório').classes('text-h6 q-mb-sm')
             ui.separator()
             ui.label(
-                'Abaixo esta um exemplo do formato de relatorio que sera gerado pela IA '
-                'quando o modulo estiver conectado.'
+                'Abaixo está um exemplo do formato de relatório que será gerado pela IA '
+                'quando o módulo estiver conectado.'
             ).classes('text-caption text-grey-7 q-mt-xs q-mb-md')
             _render_report(_get_mock_report('leadership'))
 
 
 def _show_report_dialog(tag: str):
-    """Abre um dialog com o relatorio mockado da tag."""
+    """Abre um dialog com o relatório mockado da tag."""
     report = _get_mock_report(tag)
     with ui.dialog() as dialog, ui.card().classes('w-full max-w-2xl q-pa-lg'):
         _render_report(report)
         ui.separator().classes('q-my-md')
         ui.label(
-            'Este relatorio e apenas um exemplo ilustrativo. '
-            'Quando o modulo de IA for integrado, o conteudo sera gerado '
+            'Este relatório é apenas um exemplo ilustrativo. '
+            'Quando o módulo de IA for integrado, o conteúdo será gerado '
             'automaticamente com base nas suas notas.'
         ).classes('text-caption text-grey-6 italic')
         ui.button('Fechar', icon='close', on_click=dialog.close) \
@@ -216,7 +216,7 @@ def _show_report_dialog(tag: str):
 
 
 def _render_report(report: dict):
-    """Renderiza o conteudo de um relatorio dentro do container atual."""
+    """Renderiza o conteúdo de um relatório dentro do container atual."""
     ui.label(report['title']).classes('text-h6 font-bold text-primary')
 
     # Resumo
@@ -236,9 +236,9 @@ def _render_report(report: dict):
                     ui.label('•').classes('text-body2')
                     ui.label(insight).classes('text-body2 text-grey-8')
 
-    # Sugestao
+    # Sugestão
     with ui.row().classes('items-start gap-2 q-mt-md'):
         ui.icon('trending_up', color='positive').classes('text-xl mt-1')
         with ui.column().classes('gap-0'):
-            ui.label('Sugestao de Proximo Passo').classes('text-subtitle2 font-bold')
+            ui.label('Sugestão de Próximo Passo').classes('text-subtitle2 font-bold')
             ui.label(report['suggestion']).classes('text-body2 text-grey-8')

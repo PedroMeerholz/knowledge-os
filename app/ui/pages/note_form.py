@@ -15,10 +15,10 @@ def note_form_page():
         ui.label('Criar Nova Nota').classes('text-h4 q-mb-md')
 
         with ui.card().classes('w-full q-pa-lg'):
-            title_input = ui.input('Titulo', placeholder='Titulo da nota') \
+            title_input = ui.input('Título', placeholder='Título da nota') \
                 .classes('w-full').props('outlined')
 
-            content_input = ui.textarea('Conteudo', placeholder='Escreva sua nota...') \
+            content_input = ui.textarea('Conteúdo', placeholder='Escreva sua nota...') \
                 .classes('w-full').props('outlined autogrow input-style="min-height: 200px"')
 
             source_type_select = ui.select(
@@ -29,7 +29,7 @@ def note_form_page():
 
             source_name_input = ui.input(
                 'Nome da Fonte',
-                placeholder='Ex: Titulo do livro, URL, nome do canal',
+                placeholder='Ex: Título do livro, URL, nome do canal',
             ).classes('w-full').props('outlined')
 
             source_author_input = ui.input(
@@ -103,10 +103,10 @@ def note_form_page():
 
             def handle_save():
                 if not title_input.value or not title_input.value.strip():
-                    ui.notify('O titulo e obrigatorio', type='warning')
+                    ui.notify('O titulo e obrigatório', type='warning')
                     return
                 if not content_input.value or not content_input.value.strip():
-                    ui.notify('O conteudo e obrigatorio', type='warning')
+                    ui.notify('O conteúdo e obrigatório', type='warning')
                     return
 
                 save_note(

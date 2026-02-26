@@ -31,6 +31,13 @@ RAG_TOP_K: int = int(os.environ.get('RAG_TOP_K', '5'))
 # --- Tool calling settings ---
 TOOL_CALLING_MAX_ROUNDS: int = int(os.environ.get('TOOL_CALLING_MAX_ROUNDS', '5'))
 
+# --- Guardrail settings ---
+GUARDRAIL_MAX_RETRIES: int = int(os.environ.get('GUARDRAIL_MAX_RETRIES', '2'))
+
+# --- Logging settings ---
+LOG_DIR = PROJECT_ROOT / 'logs'
+AGENT_LOG_FILE = LOG_DIR / 'agent_tracking.log'
+
 # --- NiceGUI settings ---
 APP_TITLE = 'Knowledge OS'
 APP_HOST = '0.0.0.0'

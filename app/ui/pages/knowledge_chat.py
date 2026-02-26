@@ -1,6 +1,10 @@
+import logging
+import uuid
+
 from nicegui import run, ui
 
-from app.config import MAX_CHATS
+from agents.guardrail_agent import check_coherence
+from app.config import GUARDRAIL_MAX_RETRIES, MAX_CHATS
 from tool import tool_service
 from app.storage import (
     count_chats, delete_chat, get_chat, load_chats, save_chat, update_chat,
@@ -108,7 +112,7 @@ def knowledge_chat_page():
 
                         with messages:
                             ui.chat_message(
-                                text, name='Voce', sent=True,
+                                text, name='Você', sent=True,
                             )
                         msg_input.value = ''
 
@@ -127,19 +131,56 @@ def knowledge_chat_page():
                         msg_input.props('disable')
                         send_btn.props('disable')
 
-                        try:
-                            result = await run.io_bound(
-                                tool_service.chat_with_tools,
-                                chat_history,
+                        user_question = chat_history[-1]['content']
+                        interaction_id = str(uuid.uuid4())[:8]
+                        result = None
+                        guardrail_passed = False
+
+                        for attempt in range(1 + GUARDRAIL_MAX_RETRIES):
+                            try:
+                                result = await run.io_bound(
+                                    tool_service.chat_with_tools,
+                                    chat_history,
+                                    interaction_id,
+                                )
+                            except Exception as e:
+                                result = {
+                                    'answer': 'Erro inesperado ao consultar '
+                                              f'a base de conhecimento: {e}',
+                                    'sources': [],
+                                    'llm_available': False,
+                                    'tool_used': False,
+                                }
+                                break
+
+                            if not result.get('llm_available', False):
+                                break
+
+                            is_coherent = await run.io_bound(
+                                check_coherence,
+                                user_question,
+                                result['answer'],
+                                interaction_id,
                             )
-                        except Exception as e:
-                            result = {
-                                'answer': 'Erro inesperado ao consultar '
-                                          f'a base de conhecimento: {e}',
-                                'sources': [],
-                                'llm_available': False,
-                                'tool_used': False,
-                            }
+
+                            if is_coherent:
+                                guardrail_passed = True
+                                break
+
+                            logging.getLogger(__name__).info(
+                                'Guardrail rejeitou resposta (tentativa %d/%d)',
+                                attempt + 1,
+                                1 + GUARDRAIL_MAX_RETRIES,
+                            )
+
+                        if (not guardrail_passed
+                                and result is not None
+                                and result.get('llm_available', False)):
+                            result['answer'] = (
+                                'Por motivos de segurança, não posso '
+                                'responder esta pergunta.'
+                            )
+                            result['sources'] = []
 
                         chat_history.append({
                             'role': 'assistant',
@@ -263,7 +304,7 @@ def knowledge_chat_page():
             )
             for msg in chat_history:
                 if msg['role'] == 'user':
-                    ui.chat_message(msg['content'], name='Voce', sent=True)
+                    ui.chat_message(msg['content'], name='Você', sent=True)
                 elif msg['role'] == 'assistant':
                     with ui.chat_message(
                         name=BOT_NAME, avatar=BOT_AVATAR,

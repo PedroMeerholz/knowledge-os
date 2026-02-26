@@ -26,6 +26,7 @@ from app.config import (
 from app.services import ollama_service, rag_service
 from app.storage import load_tags
 from prompts.tool_prompt import TOOL_SYSTEM_PROMPT
+from agents.logging_callback import AgentLoggingCallback
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +64,13 @@ def _to_langchain_messages(messages: list[dict]) -> list:
 # ---------------------------------------------------------------------------
 # Loop de orquestracao
 # ---------------------------------------------------------------------------
-def chat_with_tools(messages: list[dict]) -> dict:
+def chat_with_tools(messages: list[dict], interaction_id: str | None = None) -> dict:
     """
     Executa o loop de tool calling completo usando LangChain.
 
     Args:
         messages: Historico de mensagens do chat (role/content dicts).
+        interaction_id: UUID opcional para rastreamento no log.
 
     Returns:
         dict com:
@@ -135,9 +137,14 @@ def chat_with_tools(messages: list[dict]) -> dict:
     lc_messages = _to_langchain_messages(messages)
     tool_was_used = False
 
+    invoke_config = {}
+    if interaction_id:
+        callback = AgentLoggingCallback(interaction_id, 'model')
+        invoke_config = {'callbacks': [callback]}
+
     for round_num in range(TOOL_CALLING_MAX_ROUNDS):
         try:
-            response: AIMessage = llm.invoke(lc_messages)
+            response: AIMessage = llm.invoke(lc_messages, config=invoke_config)
         except Exception as e:
             logger.error('Erro na chamada ao Ollama (round %d): %s', round_num, e)
             return {

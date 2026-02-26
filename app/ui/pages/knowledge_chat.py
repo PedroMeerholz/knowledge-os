@@ -1,7 +1,7 @@
 from nicegui import run, ui
 
 from app.config import MAX_CHATS
-from app.services import tool_service
+from tool import tool_service
 from app.storage import (
     count_chats, delete_chat, get_chat, load_chats, save_chat, update_chat,
 )

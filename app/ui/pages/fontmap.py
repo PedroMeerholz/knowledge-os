@@ -2,8 +2,8 @@ from collections import Counter
 
 from nicegui import ui
 
-from components import create_sidebar
-from storage import load_notes
+from app.ui.components import create_sidebar
+from app.storage import load_notes
 
 
 @ui.page('/fontmap')

@@ -1,7 +1,7 @@
 from nicegui import ui
 
-from components import create_sidebar
-from storage import load_tags, save_tag, delete_tag
+from app.ui.components import create_sidebar
+from app.storage import load_tags, save_tag, delete_tag
 
 
 @ui.page('/tags')
@@ -21,11 +21,11 @@ def tags_page():
                 def handle_create():
                     val = (tag_input.value or '').strip()
                     if not val:
-                        ui.notify('O nome da tag e obrigatorio', type='warning')
+                        ui.notify('O nome da tag e obrigatório', type='warning')
                         return
                     result = save_tag(val)
                     if result is None:
-                        ui.notify(f'A tag "{val.lower()}" ja existe', type='warning')
+                        ui.notify(f'A tag "{val.lower()}" já existe', type='warning')
                         return
                     ui.notify(f'Tag "{result["name"]}" criada com sucesso!', type='positive')
                     tag_input.value = ''
@@ -61,7 +61,7 @@ def tags_page():
                                     def do_delete():
                                         with ui.dialog() as dialog, ui.card():
                                             ui.label(f'Excluir tag "{tname}"?').classes('text-h6')
-                                            ui.label('Isso nao removera a tag das notas existentes.')
+                                            ui.label('Isso não removerá a tag das notas existentes.')
                                             with ui.row().classes('q-mt-md gap-2'):
                                                 ui.button('Cancelar', on_click=dialog.close).props('flat')
                                                 ui.button('Excluir', color='negative',

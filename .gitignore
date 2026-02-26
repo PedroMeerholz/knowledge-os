@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Runtime data (regenerated from notes)
+data/faiss_index/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude temp files
+tmpclaude-*
+
+# Model action logs
+logs/*.log
+
+# env file
+.env

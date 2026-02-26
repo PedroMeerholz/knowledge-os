@@ -1,22 +1,21 @@
-from nicegui import app, ui
+"""Entry point for the Knowledge OS application."""
+import logging
 
-# Importa os modulos de paginas para registrar as rotas via @ui.page
-from pages import home         # noqa: F401
-from pages import note_form  # noqa: F401
-from pages import notes_db   # noqa: F401
-from pages import tags        # noqa: F401
-from pages import fontmap     # noqa: F401
-from pages import reports     # noqa: F401
-from pages import knowledge_chat  # noqa: F401
+from nicegui import ui
 
-# Tema global
-app.colors(
-    primary='#1a1a2e',
-    secondary='#16213e',
-    accent='#0f3460',
-    positive='#53d769',
-    negative='#ff4757',
-    warning='#ffa502',
-)
+import app  # noqa: F401 -- triggers theme + route registration
 
-ui.run(title='Knowledge OS', host='0.0.0.0', port=7860, reload=False)
+from app.config import APP_TITLE, APP_HOST, APP_PORT, LOG_DIR, AGENT_LOG_FILE
+
+# --- Configure agent tracking logger ---
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+agent_logger = logging.getLogger('agent_tracking')
+agent_logger.setLevel(logging.INFO)
+agent_logger.propagate = False
+
+_file_handler = logging.FileHandler(AGENT_LOG_FILE, encoding='utf-8')
+_file_handler.setFormatter(logging.Formatter('%(asctime)s | %(message)s'))
+agent_logger.addHandler(_file_handler)
+
+ui.run(title=APP_TITLE, host=APP_HOST, port=APP_PORT, reload=False)

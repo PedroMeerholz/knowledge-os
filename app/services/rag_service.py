@@ -9,20 +9,13 @@ from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_openai import ChatOpenAI
 
 from app.config import (
     FAISS_INDEX_DIR,
     EMBEDDING_MODEL_NAME,
     RAG_TOP_K,
-    OPENAI_API_KEY,
-    CHAT_MODEL,
-    OPENAI_TIMEOUT,
 )
-from prompts.rag_prompt import RAG_PROMPT_TEMPLATE
 
 logger = logging.getLogger(__name__)
 
@@ -253,61 +246,3 @@ def retrieve(question: str, source_type: str = '', tags: list[str] | None = None
 
     context = '\n---\n'.join(context_parts)
     return {'context': context, 'sources': sources}
-
-
-# ---------------------------------------------------------------------------
-# Consulta RAG (recuperacao + geracao)
-# ---------------------------------------------------------------------------
-def query(question: str, source_type: str = '', tags: list[str] | None = None,
-          top_k: int = RAG_TOP_K) -> dict:
-    """
-    Consulta a base de conhecimento usando RAG.
-
-    Args:
-        question: A pergunta do usuário.
-        source_type: Filtro opcional por tipo de fonte (ex: 'livro', 'video').
-        tags: Filtro opcional por tags (notas que contenham QUALQUER uma das tags).
-        top_k: Numero de documentos a recuperar.
-
-    Returns:
-        dict com:
-            'answer': str - A resposta gerada (ou mensagem de erro).
-            'sources': list[dict] - Metadados das notas recuperadas.
-            'llm_available': bool - Se o Ollama foi usado para geracao.
-    """
-    result = retrieve(question, source_type, tags, top_k)
-    context = result['context']
-    sources = result['sources']
-
-    if not sources:
-        if not _get_vectorstore():
-            msg = 'A base de conhecimento esta vazia. Adicione notas primeiro.'
-        else:
-            msg = 'Nenhuma nota relevante encontrada na sua base de conhecimento.'
-        return {
-            'answer': msg,
-            'sources': [],
-            'llm_available': False,
-        }
-
-    try:
-        llm = ChatOpenAI(
-            api_key=OPENAI_API_KEY,
-            model=CHAT_MODEL,
-            timeout=OPENAI_TIMEOUT,
-        )
-        prompt = PromptTemplate(
-            input_variables=['context', 'question'],
-            template=RAG_PROMPT_TEMPLATE,
-        )
-        chain = prompt | llm | StrOutputParser()
-        answer = chain.invoke({'context': context, 'question': question})
-    except Exception as e:
-        logger.error('Falha na geracao com LLM: %s', e)
-        answer = f'Erro ao gerar resposta com o modelo de IA: {e}'
-
-    return {
-        'answer': answer,
-        'sources': sources,
-        'llm_available': True,
-    }
